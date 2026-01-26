@@ -1,0 +1,264 @@
+@baseUrl = https://localhost:7232
+
+### Initialize Elasticsearch index
+# Run this first to create the products index with proper mappings
+POST {{baseUrl}}/api/products/init
+
+### Seed sample products
+# Populates the index with sample data for testing
+POST {{baseUrl}}/api/products/seed
+
+### Search all products
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{}
+
+### Search with text query (fuzzy matching on name/description)
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "wireless"
+}
+
+### Search by category
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "category": "Electronics"
+}
+
+### Search with price range
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "minPrice": 100,
+    "maxPrice": 500
+}
+
+### Search with all filters combined
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "wireless",
+    "category": "Electronics",
+    "minPrice": 50,
+    "maxPrice": 200,
+    "from": 0,
+    "size": 5
+}
+
+### Search with pagination
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "from": 0,
+    "size": 5
+}
+
+### Search for products (results may include variants)
+# Note: ~30% of sample products have 2-5 variants with color/size options
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "keyboard",
+    "size": 10
+}
+
+### Search sorted by newest (default descending)
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "sort": "desc"
+}
+
+### Search sorted by oldest (ascending)
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "sort": "asc"
+}
+
+### Search with filters and sort by oldest
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "category": "Electronics",
+    "minPrice": 100,
+    "sort": "asc"
+}
+
+### Search with query and sort by newest
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "iPhone 18 Pro",
+    "sort": "desc",
+    "size": 5
+}
+
+### Search by variant SKU
+# Search for products by their variant SKU (e.g., IP18PM-ORG-512 for iPhone 18 orange variant)
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "IP18PM-ORG-512"
+}
+
+### Search by variant color
+# Finds products with orange color variants
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "orange"
+}
+
+### Search by variant size
+# Finds products with 512GB size variants
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "512GB"
+}
+
+### Search combining product name and variant color
+# Finds iPhone products with black variants - demonstrates cross-field matching
+# where "iPhone" matches product name and "black" matches variant color
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "iPhone black"
+}
+
+### Search combining product name and variant color (alternative)
+# Finds iPhone products with white variants
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "white iPhone"
+}
+
+### Create a new product
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+    "name": "iPhone 17 Pro Max",
+    "description": "iphone 17 pro max with advanced features",
+    "category": "Electronics",
+    "price": 599.99,
+    "tags": ["smartphone", "iphone", "apple", "mobile"],
+    "inStock": true
+}
+
+### Create product with minimal fields
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+    "name": "USB Cable",
+    "description": "USB-C to USB-A cable, 2 meters",
+    "category": "Accessories",
+    "price": 9.99
+}
+
+### Create product with variants
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+    "name": "Gaming Keyboard Pro",
+    "description": "Mechanical gaming keyboard with RGB lighting",
+    "category": "Electronics",
+    "price": 149.99,
+    "tags": ["gaming", "mechanical", "rgb", "wireless"],
+    "inStock": true,
+    "variants": [
+        {
+            "sku": "GKPRO-BLK-US",
+            "size": "Full Size",
+            "color": "Black",
+            "priceAdjustment": 0,
+            "stock": 50
+        },
+        {
+            "sku": "GKPRO-WHT-US",
+            "size": "Full Size",
+            "color": "White",
+            "priceAdjustment": 10,
+            "stock": 30
+        },
+        {
+            "sku": "GKPRO-BLK-TKL",
+            "size": "TKL",
+            "color": "Black",
+            "priceAdjustment": -20,
+            "stock": 25
+        }
+    ]
+}
+
+### Create t-shirt with color and size variants
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+    "name": "Tech Conference T-Shirt",
+    "description": "Comfortable cotton t-shirt with tech logo",
+    "category": "Accessories",
+    "price": 24.99,
+    "tags": ["clothing", "merchandise"],
+    "inStock": true,
+    "variants": [
+        {
+            "sku": "TSHIRT-BLK-S",
+            "size": "Small",
+            "color": "Black",
+            "priceAdjustment": 0,
+            "stock": 100
+        },
+        {
+            "sku": "TSHIRT-BLK-M",
+            "size": "Medium",
+            "color": "Black",
+            "priceAdjustment": 0,
+            "stock": 150
+        },
+        {
+            "sku": "TSHIRT-BLK-L",
+            "size": "Large",
+            "color": "Black",
+            "priceAdjustment": 0,
+            "stock": 120
+        },
+        {
+            "sku": "TSHIRT-WHT-M",
+            "size": "Medium",
+            "color": "White",
+            "priceAdjustment": 2,
+            "stock": 80
+        }
+    ]
+}
+
+### Get product by ID (replace with actual ID)
+@productId = "your-product-id-here"
+GET {{baseUrl}}/api/products/{{productId}}
+
+### Delete product by ID (replace with actual ID)
+DELETE {{baseUrl}}/api/products/{{productId}}

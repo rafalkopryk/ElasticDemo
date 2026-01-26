@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <File Path="CLAUDE.md" />
+    <Project Path="src/ElasticDemo.Api/ElasticDemo.Api.csproj" />
+    <Project Path="src/ElasticDemo.AppHost/ElasticDemo.AppHost.csproj" />
+    <Project Path="src/ElasticDemo.ServiceDefaults/ElasticDemo.ServiceDefaults.csproj" />
+  </Folder>
+</Solution>

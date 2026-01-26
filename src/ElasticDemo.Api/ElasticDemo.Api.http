@@ -1,0 +1,13 @@
+@ElasticDemo.Api_HostAddress = http://localhost:5275
+
+### Search products
+POST {{ElasticDemo.Api_HostAddress}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "laptop",
+    "from": 0,
+    "size": 5
+}
+
+###
