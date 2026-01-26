@@ -1,12 +1,15 @@
+---
+name: generate-products
+description: Generate sample product data for the ElasticDemo application. Use when the user wants to regenerate or create new sample products for testing.
+argument-hint: "[count] [--indented]"
+disable-model-invocation: true
+allowed-tools: Bash(dotnet run*)
+model: sonnet
+---
+
 # Generate Sample Products
 
-Generate sample product data for the ElasticDemo application.
-
-## Usage
-
-```
-/generate-products [count] [--indented]
-```
+Generate sample product data for the ElasticDemo application using the ProductGenerator tool.
 
 ## Arguments
 
@@ -15,14 +18,14 @@ Generate sample product data for the ElasticDemo application.
 
 ## Instructions
 
-Run the product generator script with the provided arguments:
+Run the product generator script:
 
 ```bash
-dotnet run tools/ProductGenerator/generate-products.cs -- --count $COUNT $INDENTED_FLAG
+dotnet run tools/ProductGenerator/generate-products.cs -- --count $0 $1
 ```
 
 Where:
-- `$COUNT` is the count argument (default 1000 if not provided)
-- `$INDENTED_FLAG` is `--indented` if the user requested indented output, otherwise empty
+- `$0` is the count (default 1000 if not provided)
+- `$1` is `--indented` if true, otherwise empty
 
 After running, report how many products were generated and the output file path.
