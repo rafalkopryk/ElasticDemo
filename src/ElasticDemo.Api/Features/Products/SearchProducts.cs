@@ -1,5 +1,7 @@
+using System.Drawing;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.QueryDsl;
+using Microsoft.AspNetCore.Identity;
 
 namespace ElasticDemo.Api.Features.Products;
 
@@ -51,12 +53,15 @@ public class SearchProductsHandler(ElasticsearchClient client)
 
         if (!string.IsNullOrWhiteSpace(query))
         {
-            queries.Add(must => must.MultiMatch(mm => mm
-                .Fields(new[] { "name^2", "description", "variants.sku^1.5", "variants.color^1.5", "variants.size" })
-                .Query(query)
-                .Fuzziness(new Fuzziness("AUTO"))
-                .MinimumShouldMatch("100%")
-            ));
+            // Split query into terms and require each term to match in at least one field
+            var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var term in terms)
+            {
+                queries.Add(must => must.MultiMatch(mm => mm
+                    .Fields(new[] { "name", "description", "variants.color" })
+                    .Query(term)
+                ));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(category))

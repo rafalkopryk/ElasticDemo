@@ -32,7 +32,7 @@ public class InitializeIndexHandler(ElasticsearchClient client)
                         .Properties(vp => vp
                             .Keyword("sku")
                             .Keyword("size")
-                            .Keyword("color")
+                            .Text("color")
                             .DoubleNumber("priceAdjustment")
                             .IntegerNumber("stock")
                         )

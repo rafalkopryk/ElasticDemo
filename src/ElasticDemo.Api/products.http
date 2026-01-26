@@ -166,6 +166,42 @@ Content-Type: application/json
     "inStock": true
 }
 
+### Create iPhone 18 Pro Max with color variants
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+    "name": "iPhone 18 Pro Max",
+    "description": "Latest iPhone with A18 chip and titanium design",
+    "category": "Electronics",
+    "price": 1199.99,
+    "tags": ["smartphone", "iphone", "apple", "mobile", "5g"],
+    "inStock": true,
+    "variants": [
+        {
+            "sku": "IP18PM-BLK-256",
+            "size": "256GB",
+            "color": "Black",
+            "priceAdjustment": 0,
+            "stock": 50
+        },
+        {
+            "sku": "IP18PM-WHT-256",
+            "size": "256GB",
+            "color": "White",
+            "priceAdjustment": 0,
+            "stock": 45
+        },
+        {
+            "sku": "IP18PM-BLK-512",
+            "size": "512GB",
+            "color": "Black",
+            "priceAdjustment": 100,
+            "stock": 30
+        }
+    ]
+}
+
 ### Create product with minimal fields
 POST {{baseUrl}}/api/products
 Content-Type: application/json
