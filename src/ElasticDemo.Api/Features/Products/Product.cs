@@ -9,15 +9,15 @@ public record ProductVariant
     public int Stock { get; init; }
 }
 
-public class Product
+public record Product
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public required string Name { get; set; }
-    public required string Description { get; set; }
-    public required string Category { get; set; }
-    public decimal Price { get; set; }
-    public List<string> Tags { get; set; } = [];
-    public bool InStock { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public List<ProductVariant> Variants { get; set; } = [];
+    public string Id { get; init; } = Guid.NewGuid().ToString();
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public required string Category { get; init; }
+    public decimal Price { get; init; }
+    public List<string> Tags { get; init; } = [];
+    public bool InStock { get; init; } = true;
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public List<ProductVariant> Variants { get; init; } = [];
 }

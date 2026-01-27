@@ -20,7 +20,7 @@ public record CreateProductRequest(
     List<CreateProductVariantRequest>? Variants = null
 );
 
-public class CreateProductHandler(ElasticsearchClient client)
+public class CreateProductHandler(ElasticsearchClient client, TimeProvider timeProvider)
 {
     public async Task<IResult> Handle(CreateProductRequest request)
     {
@@ -32,6 +32,7 @@ public class CreateProductHandler(ElasticsearchClient client)
             Price = request.Price,
             Tags = request.Tags ?? [],
             InStock = request.InStock,
+            CreatedAt = timeProvider.GetUtcNow(),
             Variants = request.Variants?.Select(v => new ProductVariant
             {
                 Sku = v.Sku,

@@ -15,7 +15,7 @@ ElasticDemo is a .NET Aspire-based distributed application demonstrating Elastic
 dotnet build ElasticDemo.slnx
 
 # Run the application (starts Aspire orchestrator + Elasticsearch container + API)
-dotnet run --project src/ElasticDemo.AppHost
+aspire run
 
 # Run just the API (requires Elasticsearch running separately)
 dotnet run --project src/ElasticDemo.Api
@@ -97,7 +97,7 @@ Search supports: query text (fuzzy matching on name/description), category filte
 Product {
     Id (string), Name (string), Description (string),
     Category (string), Price (decimal), Tags (List<string>),
-    InStock (bool), CreatedAt (DateTime),
+    InStock (bool), CreatedAt (DateTimeOffset),
     Variants (List<ProductVariant>)
 }
 
@@ -116,6 +116,13 @@ Approximately 30% of sample products include 2-5 variants with different colors,
 - HTTP: `http://localhost:5275`
 - HTTPS: `https://localhost:7232`
 - OpenAPI spec: `/openapi/v1.json`
+
+## Coding Conventions
+
+- **Immutable types** - Prefer `record` with `init` properties over mutable `class` with `set`
+- **DateTimeOffset** - Use `DateTimeOffset` instead of `DateTime`
+- **TimeProvider** - Use `TimeProvider` instead of `DateTime.Now`/`DateTime.UtcNow`/`DateTimeOffset.UtcNow` for testability
+- **Do not read `sample-products.json`** - This is a large generated file; do not read it for context
 
 ## Working Style
 

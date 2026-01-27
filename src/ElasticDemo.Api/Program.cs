@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddElasticsearchClient("elasticsearch");
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton(TimeProvider.System);
 
 // Register handlers
 builder.Services.AddScoped<InitializeIndexHandler>();
