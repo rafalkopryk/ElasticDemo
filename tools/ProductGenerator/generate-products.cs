@@ -38,11 +38,27 @@ var categoryDefs = new Dictionary<string, (string[] Types, decimal MinPrice, dec
     ["Gaming"] = (["Controller", "Gaming Chair", "VR Headset", "Gaming Mouse", "Gaming Keyboard", "Mousepad", "Headset Stand"], 30, 1500, 0.115)
 };
 
-// Calculate counts based on total and weights
-var categories = categoryDefs.ToDictionary(
-    kvp => kvp.Key,
-    kvp => (kvp.Value.Types, kvp.Value.MinPrice, kvp.Value.MaxPrice, Count: (int)(totalCount * kvp.Value.Weight))
-);
+// Calculate counts based on total and weights, distributing remainder to avoid truncation loss
+var categoriesRaw = categoryDefs.Select(kvp => (
+    Key: kvp.Key,
+    Types: kvp.Value.Types,
+    MinPrice: kvp.Value.MinPrice,
+    MaxPrice: kvp.Value.MaxPrice,
+    ExactCount: totalCount * kvp.Value.Weight
+)).ToList();
+
+var flooredCounts = categoriesRaw.Select(c => (int)c.ExactCount).ToList();
+var remainder = totalCount - flooredCounts.Sum();
+var fractionalIndices = categoriesRaw
+    .Select((c, i) => (Index: i, Fraction: c.ExactCount - flooredCounts[i]))
+    .OrderByDescending(x => x.Fraction)
+    .ToList();
+
+for (var r = 0; r < remainder; r++)
+    flooredCounts[fractionalIndices[r].Index]++;
+
+var categories = categoriesRaw.Select((c, i) => (c.Key, c.Types, c.MinPrice, c.MaxPrice, Count: flooredCounts[i]))
+    .ToDictionary(x => x.Key, x => (x.Types, x.MinPrice, x.MaxPrice, x.Count));
 
 var prefixes = new[] { "Pro", "Elite", "Ultra", "Premium", "Basic", "Advanced", "Gaming", "Business", "Home", "Studio" };
 var tags = new[] { "new", "bestseller", "sale", "premium", "budget", "wireless", "ergonomic", "rgb", "compact", "portable", "high-performance", "smart", "usb", "bluetooth", "tech", "computer", "digital" };
@@ -144,7 +160,8 @@ foreach (var (category, (types, minPrice, maxPrice, count)) in categories)
 writer.WriteEndArray();
 writer.Flush();
 
-Console.WriteLine($"\rGenerated {totalCount:N0} products to: {fullPath}");
+var actualCount = categoryCounts.Values.Sum();
+Console.WriteLine($"\rGenerated {actualCount:N0} products to: {fullPath}");
 Console.WriteLine($"Categories: {string.Join(", ", categoryCounts.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
 
 static string GenerateDescription(string prefix, string type, string category)
