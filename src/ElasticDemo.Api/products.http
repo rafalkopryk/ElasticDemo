@@ -14,129 +14,162 @@ Content-Type: application/json
 
 {}
 
-### Search with text query (fuzzy matching on name/description)
-POST {{baseUrl}}/api/products/search
+### Create iPhone 17 Pro with variants
+# Base price: $999, Storage: 128GB/256GB/512GB/1TB, Colors: Titanium variants
+POST {{baseUrl}}/api/products
 Content-Type: application/json
 
 {
-    "query": "wireless"
-}
-
-### Search by category
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "category": "Electronics"
-}
-
-### Search with price range
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "minPrice": 100,
-    "maxPrice": 500
-}
-
-### Search with all filters combined
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "query": "wireless",
+    "name": "iPhone 17 Pro",
+    "description": "Pro-level iPhone with A17 Pro chip, titanium design, and advanced camera system",
     "category": "Electronics",
-    "minPrice": 50,
-    "maxPrice": 200,
-    "from": 0,
-    "size": 5
+    "price": 999.00,
+    "tags": ["smartphone", "iphone", "apple", "5g", "pro"],
+    "inStock": true,
+    "variants": [
+        {
+            "sku": "IP17PRO-BLK-128",
+            "size": "128GB",
+            "color": "Black Titanium",
+            "priceAdjustment": 0,
+            "stock": 50
+        },
+        {
+            "sku": "IP17PRO-BLK-256",
+            "size": "256GB",
+            "color": "Black Titanium",
+            "priceAdjustment": 100,
+            "stock": 45
+        },
+        {
+            "sku": "IP17PRO-BLK-512",
+            "size": "512GB",
+            "color": "Black Titanium",
+            "priceAdjustment": 300,
+            "stock": 30
+        },
+        {
+            "sku": "IP17PRO-BLK-1TB",
+            "size": "1TB",
+            "color": "Black Titanium",
+            "priceAdjustment": 500,
+            "stock": 15
+        },
+        {
+            "sku": "IP17PRO-WHT-256",
+            "size": "256GB",
+            "color": "White Titanium",
+            "priceAdjustment": 100,
+            "stock": 40
+        },
+        {
+            "sku": "IP17PRO-NAT-256",
+            "size": "256GB",
+            "color": "Natural Titanium",
+            "priceAdjustment": 100,
+            "stock": 35
+        },
+        {
+            "sku": "IP17PRO-DST-256",
+            "size": "256GB",
+            "color": "Desert Titanium",
+            "priceAdjustment": 100,
+            "stock": 25
+        }
+    ]
 }
 
-### Search with pagination
-POST {{baseUrl}}/api/products/search
+### Create iPhone 17 (base model) with variants
+# Base price: $799, Storage: 128GB/256GB/512GB, Colors: Black/Blue/Pink/Yellow/Green
+POST {{baseUrl}}/api/products
 Content-Type: application/json
 
 {
-    "from": 0,
-    "size": 5
-}
-
-### Search for products (results may include variants)
-# Note: ~30% of sample products have 2-5 variants with color/size options
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "query": "keyboard",
-    "size": 10
-}
-
-### Search sorted by newest (default descending)
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "sort": "desc"
-}
-
-### Search sorted by oldest (ascending)
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "sort": "asc"
-}
-
-### Search with filters and sort by oldest
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
+    "name": "iPhone 17",
+    "description": "The latest iPhone with A17 chip, all-day battery, and stunning display",
     "category": "Electronics",
-    "minPrice": 100,
-    "sort": "asc"
+    "price": 799.00,
+    "tags": ["smartphone", "iphone", "apple", "5g"],
+    "inStock": true,
+    "variants": [
+        {
+            "sku": "IP17-BLK-128",
+            "size": "128GB",
+            "color": "Black",
+            "priceAdjustment": 0,
+            "stock": 100
+        },
+        {
+            "sku": "IP17-BLK-256",
+            "size": "256GB",
+            "color": "Black",
+            "priceAdjustment": 100,
+            "stock": 80
+        },
+        {
+            "sku": "IP17-BLK-512",
+            "size": "512GB",
+            "color": "Black",
+            "priceAdjustment": 200,
+            "stock": 40
+        },
+        {
+            "sku": "IP17-BLU-128",
+            "size": "128GB",
+            "color": "Blue",
+            "priceAdjustment": 0,
+            "stock": 75
+        },
+        {
+            "sku": "IP17-PNK-128",
+            "size": "128GB",
+            "color": "Pink",
+            "priceAdjustment": 0,
+            "stock": 60
+        },
+        {
+            "sku": "IP17-YLW-128",
+            "size": "128GB",
+            "color": "Yellow",
+            "priceAdjustment": 0,
+            "stock": 55
+        },
+        {
+            "sku": "IP17-GRN-128",
+            "size": "128GB",
+            "color": "Green",
+            "priceAdjustment": 0,
+            "stock": 50
+        }
+    ]
 }
 
-### Search with query and sort by newest
+### Search for "iPhone" - finds all iPhone products
 POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
 {
-    "query": "iPhone 18 Pro",
-    "sort": "desc",
-    "size": 5
+    "query": "iPhone"
 }
 
-### Search by variant SKU
-# Search for products by their variant SKU (e.g., IP18PM-ORG-512 for iPhone 18 orange variant)
+### Search for "iPhone 17 Pro" - finds the Pro model
 POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
 {
-    "query": "IP18PM-ORG-512"
+    "query": "iPhone 17 Pro"
 }
 
-### Search by variant color
-# Finds products with orange color variants
+### Search for "black titanium" - finds products with black titanium variants
 POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
 {
-    "query": "orange"
+    "query": "black titanium"
 }
 
-### Search by variant size
-# Finds products with 512GB size variants
-POST {{baseUrl}}/api/products/search
-Content-Type: application/json
-
-{
-    "query": "512GB"
-}
-
-### Search combining product name and variant color
-# Finds iPhone products with black variants - demonstrates cross-field matching
-# where "iPhone" matches product name and "black" matches variant color
+### Search for "iPhone black" - cross-field matching demo
+# Matches "iPhone" in product name and "black" in variant color
 POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
@@ -144,156 +177,81 @@ Content-Type: application/json
     "query": "iPhone black"
 }
 
-### Search combining product name and variant color (alternative)
-# Finds iPhone products with white variants
+### Search by category - finds iPhone products in Electronics
 POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
 {
-    "query": "white iPhone"
+    "category": "Electronics"
 }
 
-### Create a new product
-POST {{baseUrl}}/api/products
+### Search by price range - finds iPhone 17 base (~$799-999)
+POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
 {
-    "name": "iPhone 17 Pro Max",
-    "description": "iphone 17 pro max with advanced features",
+    "minPrice": 800,
+    "maxPrice": 1000
+}
+
+### Search by price range - finds iPhone 17 Pro ($999+)
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "minPrice": 1000
+}
+
+### First result only
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "from": 0,
+    "size": 1
+}
+
+### Second result only
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "from": 1,
+    "size": 1
+}
+
+### Newest first (descending) - iPhone created last
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "sort": "desc"
+}
+
+### Oldest first (ascending)
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "sort": "asc"
+}
+
+### Search iPhone with category + price + sort + pagination
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "iPhone",
     "category": "Electronics",
-    "price": 599.99,
-    "tags": ["smartphone", "iphone", "apple", "mobile"],
-    "inStock": true
-}
-
-### Create iPhone 18 Pro Max with color variants
-POST {{baseUrl}}/api/products
-Content-Type: application/json
-
-{
-    "name": "iPhone 18 Pro Max",
-    "description": "Latest iPhone with A18 chip and titanium design",
-    "category": "Electronics",
-    "price": 1199.99,
-    "tags": ["smartphone", "iphone", "apple", "mobile", "5g"],
-    "inStock": true,
-    "variants": [
-        {
-            "sku": "IP18PM-BLK-256",
-            "size": "256GB",
-            "color": "Black",
-            "priceAdjustment": 0,
-            "stock": 50
-        },
-        {
-            "sku": "IP18PM-WHT-256",
-            "size": "256GB",
-            "color": "White",
-            "priceAdjustment": 0,
-            "stock": 45
-        },
-        {
-            "sku": "IP18PM-BLK-512",
-            "size": "512GB",
-            "color": "Black",
-            "priceAdjustment": 100,
-            "stock": 30
-        }
-    ]
-}
-
-### Create product with minimal fields
-POST {{baseUrl}}/api/products
-Content-Type: application/json
-
-{
-    "name": "USB Cable",
-    "description": "USB-C to USB-A cable, 2 meters",
-    "category": "Accessories",
-    "price": 9.99
-}
-
-### Create product with variants
-POST {{baseUrl}}/api/products
-Content-Type: application/json
-
-{
-    "name": "Gaming Keyboard Pro",
-    "description": "Mechanical gaming keyboard with RGB lighting",
-    "category": "Electronics",
-    "price": 149.99,
-    "tags": ["gaming", "mechanical", "rgb", "wireless"],
-    "inStock": true,
-    "variants": [
-        {
-            "sku": "GKPRO-BLK-US",
-            "size": "Full Size",
-            "color": "Black",
-            "priceAdjustment": 0,
-            "stock": 50
-        },
-        {
-            "sku": "GKPRO-WHT-US",
-            "size": "Full Size",
-            "color": "White",
-            "priceAdjustment": 10,
-            "stock": 30
-        },
-        {
-            "sku": "GKPRO-BLK-TKL",
-            "size": "TKL",
-            "color": "Black",
-            "priceAdjustment": -20,
-            "stock": 25
-        }
-    ]
-}
-
-### Create t-shirt with color and size variants
-POST {{baseUrl}}/api/products
-Content-Type: application/json
-
-{
-    "name": "Tech Conference T-Shirt",
-    "description": "Comfortable cotton t-shirt with tech logo",
-    "category": "Accessories",
-    "price": 24.99,
-    "tags": ["clothing", "merchandise"],
-    "inStock": true,
-    "variants": [
-        {
-            "sku": "TSHIRT-BLK-S",
-            "size": "Small",
-            "color": "Black",
-            "priceAdjustment": 0,
-            "stock": 100
-        },
-        {
-            "sku": "TSHIRT-BLK-M",
-            "size": "Medium",
-            "color": "Black",
-            "priceAdjustment": 0,
-            "stock": 150
-        },
-        {
-            "sku": "TSHIRT-BLK-L",
-            "size": "Large",
-            "color": "Black",
-            "priceAdjustment": 0,
-            "stock": 120
-        },
-        {
-            "sku": "TSHIRT-WHT-M",
-            "size": "Medium",
-            "color": "White",
-            "priceAdjustment": 2,
-            "stock": 80
-        }
-    ]
+    "minPrice": 800,
+    "maxPrice": 1200,
+    "sort": "desc",
+    "from": 0,
+    "size": 10
 }
 
 ### Get product by ID (replace with actual ID)
-@productId = "your-product-id-here"
+@productId = your-product-id-here
 GET {{baseUrl}}/api/products/{{productId}}
 
 ### Delete product by ID (replace with actual ID)
