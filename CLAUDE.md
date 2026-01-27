@@ -101,6 +101,7 @@ Approximately 30% of sample products include 2-5 variants with different colors,
 
 - HTTP: `http://localhost:5275`
 - HTTPS: `https://localhost:7232`
+- Elasticsearch: `http://localhost:9200`
 - Kibana: `http://localhost:5601`
 - OpenAPI spec: `/openapi/v1.json`
 

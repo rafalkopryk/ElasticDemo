@@ -1,6 +1,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var elasticsearch = builder.AddElasticsearch("elasticsearch")
+    .WithEndpoint("http", e => e.Port = 9200)
     .WithEnvironment("xpack.security.enabled", "false")
     .WithDataVolume("elasticsearch-data");
 
