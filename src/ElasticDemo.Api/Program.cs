@@ -4,8 +4,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 builder.AddElasticsearchClient("elasticsearch");
+builder.AddOllamaApiClient("ollama-Qwen3-Embedding") 
+    .AddEmbeddingGenerator();
+
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<EmbeddingService>();
 
 // Register handlers
 builder.Services.AddScoped<InitializeIndexHandler>();
@@ -14,6 +18,7 @@ builder.Services.AddScoped<SearchProductsHandler>();
 builder.Services.AddScoped<CreateProductHandler>();
 builder.Services.AddScoped<GetProductHandler>();
 builder.Services.AddScoped<DeleteProductHandler>();
+builder.Services.AddScoped<SemanticSearchHandler>();
 
 var app = builder.Build();
 
@@ -40,6 +45,12 @@ app.MapPost("/api/products/search", async (
     SearchProductsRequest request) =>
     await handler.Handle(request))
     .WithName("SearchProducts");
+
+app.MapPost("/api/products/semantic-search", async (
+    SemanticSearchHandler handler,
+    SemanticSearchRequest request) =>
+    await handler.Handle(request))
+    .WithName("SemanticSearchProducts");
 
 app.MapPost("/api/products", async (CreateProductHandler handler, CreateProductRequest request) =>
     await handler.Handle(request))

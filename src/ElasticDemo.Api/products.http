@@ -250,6 +250,19 @@ Content-Type: application/json
     "size": 10
 }
 
+### Semantic Search - natural language queries
+# Uses vector embeddings to find semantically similar products
+
+### Semantic search with similarity threshold
+# similarity: filters out weak matches (0.5 = moderate, 0.7 = strict)
+POST {{baseUrl}}/api/products/semantic-search
+Content-Type: application/json
+
+{
+    "query": "red iphone 18 with large storage",
+    "similarity": 0.80
+}
+
 ### Get product by ID (replace with actual ID)
 @productId = your-product-id-here
 GET {{baseUrl}}/api/products/{{productId}}

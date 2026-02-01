@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
 
   <ItemGroup>
     <ProjectReference Include="..\ElasticDemo.Api\ElasticDemo.Api.csproj" />
@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Elasticsearch" Version="13.1.0" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="13.0.0" />
   </ItemGroup>
 
   <PropertyGroup>

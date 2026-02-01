@@ -15,7 +15,8 @@ public record SeedProductsResponse(
 public class SeedProductsHandler(
     ElasticsearchClient client,
     IWebHostEnvironment env,
-    ILogger<SeedProductsHandler> logger)
+    ILogger<SeedProductsHandler> logger,
+    EmbeddingService embeddingService)
 {
     private record BatchResult(int Success, int Failed, string? Error);
 
@@ -83,7 +84,8 @@ public class SeedProductsHandler(
 
     public async Task<IResult> Handle()
     {
-        const int BatchSize = 50000;
+        // Smaller batch size since embedding generation is slower
+        const int BatchSize = 50;
         var currentBatch = new List<Product>(BatchSize);
 
         int totalProcessed = 0;
@@ -100,7 +102,13 @@ public class SeedProductsHandler(
 
                 if (currentBatch.Count >= BatchSize)
                 {
-                    var result = await SendBatchAsync(currentBatch, ++batchNumber);
+                    // Generate embeddings for entire batch at once
+                    var embeddings = await embeddingService.GenerateEmbeddingsAsync(currentBatch);
+                    var productsWithEmbeddings = currentBatch
+                        .Select((p, i) => p with { Embedding = embeddings[i] })
+                        .ToList();
+
+                    var result = await SendBatchAsync(productsWithEmbeddings, ++batchNumber);
                     totalProcessed += currentBatch.Count;
                     successCount += result.Success;
                     failedCount += result.Failed;
@@ -113,7 +121,12 @@ public class SeedProductsHandler(
             // Send final partial batch
             if (currentBatch.Count > 0)
             {
-                var result = await SendBatchAsync(currentBatch, ++batchNumber);
+                var embeddings = await embeddingService.GenerateEmbeddingsAsync(currentBatch);
+                var productsWithEmbeddings = currentBatch
+                    .Select((p, i) => p with { Embedding = embeddings[i] })
+                    .ToList();
+
+                var result = await SendBatchAsync(productsWithEmbeddings, ++batchNumber);
                 totalProcessed += currentBatch.Count;
                 successCount += result.Success;
                 failedCount += result.Failed;

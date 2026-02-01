@@ -20,7 +20,10 @@ public record CreateProductRequest(
     List<CreateProductVariantRequest>? Variants = null
 );
 
-public class CreateProductHandler(ElasticsearchClient client, TimeProvider timeProvider)
+public class CreateProductHandler(
+    ElasticsearchClient client,
+    TimeProvider timeProvider,
+    EmbeddingService embeddingService)
 {
     public async Task<IResult> Handle(CreateProductRequest request)
     {
@@ -42,6 +45,9 @@ public class CreateProductHandler(ElasticsearchClient client, TimeProvider timeP
                 Stock = v.Stock
             }).ToList() ?? []
         };
+
+        var embedding = await embeddingService.GenerateEmbeddingAsync(product);
+        product = product with { Embedding = embedding };
 
         var response = await client.IndexAsync(product, i => i
             .Index(InitializeIndexHandler.IndexName)

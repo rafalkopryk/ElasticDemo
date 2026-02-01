@@ -20,4 +20,5 @@ public record Product
     public bool InStock { get; init; } = true;
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     public List<ProductVariant> Variants { get; init; } = [];
+    public float[]? Embedding { get; init; }
 }

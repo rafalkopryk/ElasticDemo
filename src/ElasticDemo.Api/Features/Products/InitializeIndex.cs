@@ -37,6 +37,10 @@ public class InitializeIndexHandler(ElasticsearchClient client)
                             .IntegerNumber("stock")
                         )
                     )
+                    .DenseVector(dv => dv.Embedding, dv => dv
+                        .Dims(EmbeddingService.Dimensions)
+                        .Similarity(Elastic.Clients.Elasticsearch.Mapping.DenseVectorSimilarity.Cosine)
+                    )
                 )
             )
         );
