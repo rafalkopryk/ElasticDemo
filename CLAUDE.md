@@ -112,6 +112,7 @@ Approximately 30% of sample products include 2-5 variants with different colors,
 
 ## Coding Conventions
 
+- **Latest NuGet versions** - Always use the latest stable version of NuGet packages when adding new dependencies
 - **Immutable types** - Prefer `record` with `init` properties over mutable `class` with `set`
 - **DateTimeOffset** - Use `DateTimeOffset` instead of `DateTime`
 - **TimeProvider** - Use `TimeProvider` instead of `DateTime.Now`/`DateTime.UtcNow`/`DateTimeOffset.UtcNow` for testability
@@ -139,6 +140,8 @@ Available slash commands for common tasks:
 
 | Skill | Description | Example |
 |-------|-------------|---------|
+| `/run` | Start Aspire application in background | `/run` |
+| `/stop` | Stop the running Aspire application | `/stop` |
 | `/add-product` | Add a product to the index | `/add-product iPhone 17 Pro, Electronics, $1199` |
 | `/semantic-search` | Vector similarity search | `/semantic-search lightweight running shoes under $150` |
 | `/seed-reset` | Reset and reseed the products index | `/seed-reset` |
