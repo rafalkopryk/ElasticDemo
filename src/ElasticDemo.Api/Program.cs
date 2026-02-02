@@ -1,4 +1,5 @@
 using ElasticDemo.Api.Features.Products;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,10 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "ElasticDemo API");
+    });
 }
 
 app.UseHttpsRedirection();
