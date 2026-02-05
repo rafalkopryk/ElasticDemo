@@ -1,12 +1,20 @@
 using ElasticDemo.Api.Features.Products;
+using Microsoft.Extensions.AI;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 builder.AddElasticsearchClient("elasticsearch");
-builder.AddOllamaApiClient("ollama-Qwen3-Embedding") 
-    .AddEmbeddingGenerator();
+if (builder.Configuration.GetValue<bool>("Embeddings:UseMock"))
+{
+    builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, MockEmbeddingGenerator>();
+}
+else
+{
+    builder.AddOllamaApiClient("ollama-Qwen3-Embedding")
+        .AddEmbeddingGenerator();
+}
 
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);

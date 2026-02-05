@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Configuration;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var elasticsearch = builder.AddElasticsearch("elasticsearch")
@@ -11,14 +13,21 @@ builder.AddContainer("kibana", "kibana", "9.2.1")
     .WithEnvironment("ELASTICSEARCH_HOSTS", elasticsearch.GetEndpoint("http"))
     .WaitFor(elasticsearch);
 
-var ollama = builder.AddOllamaLocal("ollama");
+var useMock = builder.Configuration.GetValue<bool>("Embeddings:UseMock");
 
-var model = ollama.AddModel("Qwen3-Embedding");
-
-builder.AddProject<Projects.ElasticDemo_Api>("api")
+var api = builder.AddProject<Projects.ElasticDemo_Api>("api")
     .WithReference(elasticsearch)
-    .WithReference(model)
-    .WaitFor(elasticsearch)
-    .WaitFor(model);
+    .WaitFor(elasticsearch);
+
+if (useMock)
+{
+    api.WithEnvironment("Embeddings__UseMock", "true");
+}
+else
+{
+    var ollama = builder.AddOllamaLocal("ollama");
+    var model = ollama.AddModel("Qwen3-Embedding");
+    api.WithReference(model).WaitFor(model);
+}
 
 builder.Build().Run();
