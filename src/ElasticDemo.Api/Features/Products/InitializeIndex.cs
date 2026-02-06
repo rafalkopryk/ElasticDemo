@@ -28,7 +28,7 @@ public class InitializeIndexHandler(ElasticsearchClient client)
                     .Keyword(k => k.Tags)
                     .Boolean(b => b.InStock)
                     .Date(d => d.CreatedAt)
-                    .Object(o => o.Variants, o => o
+                    .Nested(o => o.Variants, o => o
                         .Properties(vp => vp
                             .Keyword("sku")
                             .Keyword("size")
