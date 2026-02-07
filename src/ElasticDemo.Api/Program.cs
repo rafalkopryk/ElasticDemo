@@ -27,6 +27,8 @@ builder.Services.AddScoped<SearchProductsHandler>();
 builder.Services.AddScoped<CreateProductHandler>();
 builder.Services.AddScoped<GetProductHandler>();
 builder.Services.AddScoped<DeleteProductHandler>();
+builder.Services.AddScoped<UpdateProductHandler>();
+builder.Services.AddScoped<UpdateProductV2Handler>();
 builder.Services.AddScoped<SemanticSearchHandler>();
 
 var app = builder.Build();
@@ -72,6 +74,14 @@ app.MapPost("/api/products", async (CreateProductHandler handler, CreateProductR
 app.MapGet("/api/products/{id}", async (GetProductHandler handler, string id) =>
     await handler.Handle(id))
     .WithName("GetProduct");
+
+app.MapPut("/api/products/{id}", async (UpdateProductHandler handler, string id, UpdateProductRequest request) =>
+    await handler.Handle(id, request))
+    .WithName("UpdateProduct");
+
+app.MapPut("/api/products/v2/{id}", async (UpdateProductV2Handler handler, string id, UpdateProductV2Request request) =>
+    await handler.Handle(id, request))
+    .WithName("UpdateProductV2");
 
 app.MapDelete("/api/products/{id}", async (DeleteProductHandler handler, string id) =>
     await handler.Handle(id))

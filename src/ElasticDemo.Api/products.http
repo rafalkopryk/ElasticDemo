@@ -149,7 +149,7 @@ POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
 {
-    "query": "iPhone"
+    "query": "iPhone 17"
 }
 
 ### Search for "iPhone 17 Pro" - finds the Pro model
@@ -245,7 +245,7 @@ Content-Type: application/json
     "category": "Electronics",
     "minPrice": 800,
     "maxPrice": 1200,
-    "sort": "desc",
+    "sort": "asc",
     "from": 0,
     "size": 10
 }
@@ -261,6 +261,72 @@ Content-Type: application/json
 {
     "query": "red iphone 18 with large storage",
     "similarity": 0.80
+}
+
+### Update iPhone 17 Pro - change price only (v1)
+PUT {{baseUrl}}/api/products/{{productId}}
+Content-Type: application/json
+
+{
+    "price": 1099.00
+}
+
+### Update iPhone 17 Pro - mark out of stock (v1)
+PUT {{baseUrl}}/api/products/{{productId}}
+Content-Type: application/json
+
+{
+    "inStock": false
+}
+
+### Update iPhone 17 Pro - update description and price (v1)
+PUT {{baseUrl}}/api/products/{{productId}}
+Content-Type: application/json
+
+{
+    "description": "Pro-level iPhone with A19 Pro chip, titanium design, and 48MP camera system",
+    "price": 1199.00
+}
+
+### Update iPhone 17 Pro - change price only (v2, partial update)
+PUT {{baseUrl}}/api/products/v2/{{productId}}
+Content-Type: application/json
+
+{
+    "price": 1099.00
+}
+
+### Update iPhone 17 Pro - mark out of stock (v2, partial update)
+PUT {{baseUrl}}/api/products/v2/{{productId}}
+Content-Type: application/json
+
+{
+    "inStock": false
+}
+
+### Update iPhone 17 Pro - update description and price (v2, partial update)
+PUT {{baseUrl}}/api/products/v2/{{productId}}
+Content-Type: application/json
+
+{
+    "description": "Pro-level iPhone with A19 Pro chip, titanium design, and 48MP camera system",
+    "price": 1199.00
+}
+
+### Update non-existent product - returns 404 (v1)
+PUT {{baseUrl}}/api/products/non-existent-id
+Content-Type: application/json
+
+{
+    "price": 999.00
+}
+
+### Update non-existent product - returns 404 (v2)
+PUT {{baseUrl}}/api/products/v2/non-existent-id
+Content-Type: application/json
+
+{
+    "price": 999.00
 }
 
 ### Get product by ID (replace with actual ID)
