@@ -73,13 +73,16 @@ public class CreateProductHandler(ElasticsearchClient client)
 | POST | `/api/products/seed` | Seed with sample products |
 | POST | `/api/products/search` | Full-text search with filters |
 | POST | `/api/products/semantic-search` | Vector/semantic search using embeddings |
+| POST | `/api/products/archive` | Move products older than 1 year to archive indices |
 | POST | `/api/products` | Create product |
 | GET | `/api/products/{id}` | Get product by ID |
 | DELETE | `/api/products/{id}` | Delete product |
 
-Search supports: query text (fuzzy matching on name/description), category filter, price range, pagination (from/size).
+Search supports: query text (fuzzy matching on name/description), category filter, price range, date range, pagination (from/size).
 
-Semantic search supports: natural language queries (kNN on embeddings), category filter, price range, k (results), numCandidates.
+Semantic search supports: natural language queries (kNN on embeddings), category filter, price range, date range, k (results), numCandidates.
+
+Archive moves products with `CreatedAt` older than 1 year from the active index to yearly `products-archive-{year}` indices using ES Reindex + DeleteByQuery.
 
 ## Product Model
 
@@ -98,7 +101,10 @@ ProductVariant {
 }
 ```
 
-Elasticsearch index: `products`
+Elasticsearch indices use an active/archive partitioning strategy:
+- **Active index** (`products`): warm tier, all CRUD operations target this index only
+- **Archive indices** (`products-archive-{year}`): cold tier, read-only via search
+- **Search optimization**: `ProductIndex.IndicesForSearch()` computes target indices at the application level — skips archives when the requested date range falls entirely within the last year
 
 Approximately 30% of sample products include 2-5 variants with different colors, sizes (optional), price adjustments, and stock levels.
 
