@@ -6,7 +6,7 @@ public class GetProductHandler(ElasticsearchClient client)
 {
     public async Task<IResult> Handle(string id)
     {
-        var response = await client.GetAsync<Product>(id, g => g.Index(InitializeIndexHandler.IndexName));
+        var response = await client.GetAsync<Product>(id, g => g.Index(ProductIndex.Active));
 
         if (!response.IsValidResponse || !response.Found)
         {

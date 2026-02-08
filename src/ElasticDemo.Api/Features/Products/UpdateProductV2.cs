@@ -17,23 +17,20 @@ public class UpdateProductV2Handler(ElasticsearchClient client)
 {
     public async Task<IResult> Handle(string id, UpdateProductV2Request request)
     {
-        var response = await client.UpdateAsync<Product, UpdateProductV2Request>(InitializeIndexHandler.IndexName, id, u => u
+        var response = await client.UpdateAsync<Product, UpdateProductV2Request>(ProductIndex.Active, id, u => u
             .Doc(request)
         );
 
         if (!response.IsValidResponse)
         {
             var reason = response.ElasticsearchServerError?.Error?.Reason ?? "Unknown error";
-
-            if (reason.Contains("document missing", StringComparison.OrdinalIgnoreCase))
+            if (response.ElasticsearchServerError?.Status == 404)
             {
                 return Results.NotFound($"Product with ID '{id}' not found.");
             }
-
             return Results.BadRequest($"Failed to update product: {reason}");
         }
 
         return Results.Ok();
     }
-
 }

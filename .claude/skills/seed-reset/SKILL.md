@@ -7,8 +7,10 @@ allowed-tools: Bash
 
 Run these curl commands sequentially, reporting success/failure:
 
-1. `curl -s -X DELETE "http://localhost:9200/products"`
-2. `curl -ks -X POST "https://localhost:7232/api/products/init"`
-3. `curl -ks -X POST "https://localhost:7232/api/products/seed"`
+1. `curl -s -X DELETE "http://localhost:9200/products"` (ignore 404)
+2. `curl -s -X DELETE "http://localhost:9200/products-archive-*"` (ignore 404)
+3. `curl -s -X DELETE "http://localhost:9200/_index_template/products-archive-template"` (ignore 404)
+4. `curl -ks -X POST "https://localhost:7232/api/products/init"`
+5. `curl -ks -X POST "https://localhost:7232/api/products/seed"`
 
 Verify: `curl -s "http://localhost:9200/products/_count"` — report product count.

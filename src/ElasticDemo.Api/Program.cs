@@ -30,6 +30,7 @@ builder.Services.AddScoped<DeleteProductHandler>();
 builder.Services.AddScoped<UpdateProductHandler>();
 builder.Services.AddScoped<UpdateProductV2Handler>();
 builder.Services.AddScoped<SemanticSearchHandler>();
+builder.Services.AddScoped<ArchiveProductsHandler>();
 
 var app = builder.Build();
 
@@ -66,6 +67,10 @@ app.MapPost("/api/products/semantic-search", async (
     SemanticSearchRequest request) =>
     await handler.Handle(request))
     .WithName("SemanticSearchProducts");
+
+app.MapPost("/api/products/archive", async (ArchiveProductsHandler handler) =>
+    await handler.Handle())
+    .WithName("ArchiveProducts");
 
 app.MapPost("/api/products", async (CreateProductHandler handler, CreateProductRequest request) =>
     await handler.Handle(request))

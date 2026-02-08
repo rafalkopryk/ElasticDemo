@@ -50,7 +50,7 @@ public class CreateProductHandler(
         product = product with { Embedding = embedding };
 
         var response = await client.IndexAsync(product, i => i
-            .Index(InitializeIndexHandler.IndexName)
+            .Index(ProductIndex.Active)
             .Id(product.Id)
         );
 

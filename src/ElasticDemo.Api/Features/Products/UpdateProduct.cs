@@ -12,7 +12,7 @@ public class UpdateProductHandler(ElasticsearchClient client)
 {
     public async Task<IResult> Handle(string id, UpdateProductRequest request)
     {
-        var getResponse = await client.GetAsync<Product>(id, g => g.Index(InitializeIndexHandler.IndexName));
+        var getResponse = await client.GetAsync<Product>(id, g => g.Index(ProductIndex.Active));
 
         if (!getResponse.IsValidResponse || !getResponse.Found)
         {
@@ -28,7 +28,7 @@ public class UpdateProductHandler(ElasticsearchClient client)
         };
 
         var indexResponse = await client.IndexAsync(product, i => i
-            .Index(InitializeIndexHandler.IndexName)
+            .Index(ProductIndex.Active)
             .Id(product.Id)
         );
 

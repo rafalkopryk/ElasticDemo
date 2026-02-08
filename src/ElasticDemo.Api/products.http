@@ -250,6 +250,29 @@ Content-Type: application/json
     "size": 10
 }
 
+### Search with date range - products from 2025 only
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "createdAtFrom": "2025-01-01T00:00:00Z",
+    "createdAtTo": "2025-12-31T23:59:59Z"
+}
+
+### Search with date range - products from 2024-2025
+POST {{baseUrl}}/api/products/search
+Content-Type: application/json
+
+{
+    "query": "laptop",
+    "createdAtFrom": "2024-01-01T00:00:00Z",
+    "createdAtTo": "2025-12-31T23:59:59Z"
+}
+
+### Archive old products
+# Moves products older than 1 year from active index to yearly archive indices
+POST {{baseUrl}}/api/products/archive
+
 ### Semantic Search - natural language queries
 # Uses vector embeddings to find semantically similar products
 
@@ -261,6 +284,16 @@ Content-Type: application/json
 {
     "query": "red iphone 18 with large storage",
     "similarity": 0.80
+}
+
+### Semantic search with date range
+POST {{baseUrl}}/api/products/semantic-search
+Content-Type: application/json
+
+{
+    "query": "lightweight running shoes",
+    "createdAtFrom": "2025-01-01T00:00:00Z",
+    "createdAtTo": "2025-12-31T23:59:59Z"
 }
 
 ### Update iPhone 17 Pro - change price only (v1)

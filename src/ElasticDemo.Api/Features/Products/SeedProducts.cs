@@ -55,14 +55,13 @@ public class SeedProductsHandler(
         try
         {
             var bulkResponse = await client.BulkAsync(b => b
-                .Index(InitializeIndexHandler.IndexName)
+                .Index(ProductIndex.Active)
                 .IndexMany(batch)
             );
 
             logger.LogInformation("Batch {BatchNumber} response: IsValidResponse={IsValid}, Errors={HasErrors}",
                 batchNumber, bulkResponse.IsValidResponse, bulkResponse.Errors);
 
-            // Check transport-level failure first (HTTP errors, connection issues)
             if (!bulkResponse.IsValidResponse)
             {
                 logger.LogError("Batch {BatchNumber} transport failure: {DebugInfo}",
@@ -70,14 +69,12 @@ public class SeedProductsHandler(
                 return new BatchResult(0, batch.Count, $"Batch {batchNumber} transport failure");
             }
 
-            // Check for individual document errors in the response
             if (bulkResponse.Errors)
             {
                 var itemsWithErrors = bulkResponse.ItemsWithErrors.ToList();
                 var failedCount = itemsWithErrors.Count();
                 var successCount = batch.Count - failedCount;
 
-                // Log the first error for debugging
                 if (itemsWithErrors.Any())
                 {
                     var firstError = itemsWithErrors.First();

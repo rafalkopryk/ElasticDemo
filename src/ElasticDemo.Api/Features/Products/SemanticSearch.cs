@@ -8,6 +8,8 @@ public record SemanticSearchRequest(
     string? Category = null,
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
+    DateTimeOffset? CreatedAtFrom = null,
+    DateTimeOffset? CreatedAtTo = null,
     int K = 10,
     int NumCandidates = 100,
     float? Similarity = null
@@ -15,7 +17,7 @@ public record SemanticSearchRequest(
 
 public record SemanticSearchResponse(List<Product> Products, long Total);
 
-public class SemanticSearchHandler(ElasticsearchClient client, EmbeddingService embeddingService)
+public class SemanticSearchHandler(ElasticsearchClient client, EmbeddingService embeddingService, TimeProvider timeProvider)
 {
     public async Task<IResult> Handle(SemanticSearchRequest request)
     {
@@ -27,12 +29,14 @@ public class SemanticSearchHandler(ElasticsearchClient client, EmbeddingService 
         // Generate embedding for the search query
         var queryEmbedding = await embeddingService.GenerateEmbeddingAsync(request.Query);
 
-        // Build post-filter for category and price
-        var filters = BuildFilters(request.Category, request.MinPrice, request.MaxPrice);
+        // Build post-filter for category, price, and date range
+        var filters = BuildFilters(request.Category, request.MinPrice, request.MaxPrice, request.CreatedAtFrom, request.CreatedAtTo);
+
+        var targetIndices = ProductIndex.IndicesForSearch(request.CreatedAtFrom, request.CreatedAtTo, timeProvider);
 
         var searchResponse = await client.SearchAsync<Product>(s =>
         {
-            s.Indices(InitializeIndexHandler.IndexName)
+            s.Indices(targetIndices)
                 .Knn(knn =>
                 {
                     knn.Field(f => f.Embedding)
@@ -64,7 +68,9 @@ public class SemanticSearchHandler(ElasticsearchClient client, EmbeddingService 
     private static List<Action<QueryDescriptor<Product>>> BuildFilters(
         string? category,
         decimal? minPrice,
-        decimal? maxPrice)
+        decimal? maxPrice,
+        DateTimeOffset? createdAtFrom,
+        DateTimeOffset? createdAtTo)
     {
         var filters = new List<Action<QueryDescriptor<Product>>>();
 
@@ -84,6 +90,18 @@ public class SemanticSearchHandler(ElasticsearchClient client, EmbeddingService 
                     .Gte(minPrice.HasValue ? (double)minPrice.Value : null)
                     .Lte(maxPrice.HasValue ? (double)maxPrice.Value : null)
                 )
+            ));
+        }
+
+        if (createdAtFrom.HasValue || createdAtTo.HasValue)
+        {
+            filters.Add(must => must.Range(r => r
+                .Date(dr =>
+                {
+                    dr.Field(f => f.CreatedAt);
+                    if (createdAtFrom.HasValue) dr.Gte(createdAtFrom.Value.ToString("o"));
+                    if (createdAtTo.HasValue) dr.Lte(createdAtTo.Value.ToString("o"));
+                })
             ));
         }
 
