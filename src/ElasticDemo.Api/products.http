@@ -12,7 +12,10 @@ POST {{baseUrl}}/api/products/seed
 POST {{baseUrl}}/api/products/search
 Content-Type: application/json
 
-{}
+{
+  "createdAtFrom": "2025-02-09T01:31:10",
+  "sort": "asc"
+}
 
 ### Create iPhone 17 Pro with variants
 # Base price: $999, Storage: 128GB/256GB/512GB/1TB, Colors: Titanium variants

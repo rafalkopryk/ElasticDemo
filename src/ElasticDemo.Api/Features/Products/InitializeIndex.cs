@@ -16,12 +16,6 @@ public class InitializeIndexHandler(ElasticsearchClient client)
         if (!existsResponse.Exists)
         {
             var createResponse = await client.Indices.CreateAsync(ProductIndex.Active, c => c
-                .Settings(s => s
-                    .OtherSettings(new Dictionary<string, object>
-                    {
-                        ["index.routing.allocation.require._tier_preference"] = "data_warm"
-                    })
-                )
                 .Mappings(m => m
                     .Properties<Product>(p => p
                         .Keyword(k => k.Id)
@@ -65,12 +59,6 @@ public class InitializeIndexHandler(ElasticsearchClient client)
         var templateResponse = await client.Indices.PutIndexTemplateAsync(ProductIndex.ArchiveTemplateName, t => t
             .IndexPatterns((Indices)ProductIndex.ArchivePattern)
             .Template(tpl => tpl
-                .Settings(s => s
-                    .OtherSettings(new Dictionary<string, object>
-                    {
-                        ["index.routing.allocation.require._tier_preference"] = "data_cold"
-                    })
-                )
                 .Mappings(m => m
                     .Properties<Product>(p => p
                         .Keyword(k => k.Id)

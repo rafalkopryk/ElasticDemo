@@ -1,3 +1,4 @@
+using ElasticDemo.Api.Features.Applications;
 using ElasticDemo.Api.Features.Products;
 using Microsoft.Extensions.AI;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -31,6 +32,9 @@ builder.Services.AddScoped<UpdateProductHandler>();
 builder.Services.AddScoped<UpdateProductV2Handler>();
 builder.Services.AddScoped<SemanticSearchHandler>();
 builder.Services.AddScoped<ArchiveProductsHandler>();
+builder.Services.AddScoped<InitializeApplicationIndexHandler>();
+builder.Services.AddScoped<SeedApplicationsHandler>();
+builder.Services.AddScoped<SearchApplicationsHandler>();
 
 var app = builder.Build();
 
@@ -91,5 +95,20 @@ app.MapPut("/api/products/v2/{id}", async (UpdateProductV2Handler handler, strin
 app.MapDelete("/api/products/{id}", async (DeleteProductHandler handler, string id) =>
     await handler.Handle(id))
     .WithName("DeleteProduct");
+
+app.MapPost("/api/applications/init", async (InitializeApplicationIndexHandler handler) =>
+    await handler.Handle())
+    .WithName("InitializeApplicationIndex");
+
+app.MapPost("/api/applications/seed", async (SeedApplicationsHandler handler, IFormFile file) =>
+    await handler.Handle(file))
+    .WithName("SeedApplications")
+    .DisableAntiforgery();
+
+app.MapPost("/api/applications/search", async (
+    SearchApplicationsHandler handler,
+    SearchApplicationsRequest request) =>
+    await handler.Handle(request))
+    .WithName("SearchApplications");
 
 app.Run();

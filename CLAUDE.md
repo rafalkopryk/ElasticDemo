@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ElasticDemo is a .NET Aspire-based distributed application demonstrating Elasticsearch integration with ASP.NET Core. It provides a REST API for managing and searching a product catalog.
+ElasticDemo is a .NET Aspire-based distributed application demonstrating Elasticsearch integration with ASP.NET Core. It provides a REST API for managing and searching a product catalog and an application (loan/financial) registry.
 
 **Stack:** .NET 10.0, C#, Elasticsearch 8.x+, Ollama (Qwen3-Embedding-8B embeddings), .NET Aspire orchestration, OpenTelemetry
 
@@ -23,13 +23,12 @@ dotnet run --project src/ElasticDemo.Api
 
 ## Testing with .http Files
 
-Use `src/ElasticDemo.Api/products.http` to test the API workflow:
+Use `src/ElasticDemo.Api/products.http` and `src/ElasticDemo.Api/applications.http` to test API workflows:
 
-1. Run init and seed requests to set up data
-2. Test search with various filters (query, category, price range)
-3. Test CRUD operations (create, get, delete)
+**Products:** init, seed, search (text/semantic), CRUD, archive
+**Applications:** init, seed (file upload), search (by product/channel/status/date/client across roles)
 
-The file uses `@baseUrl` variable - modify for HTTPS if needed.
+The files use `@baseUrl` variable - modify for HTTPS if needed.
 
 ## Architecture
 
@@ -41,7 +40,7 @@ Three-project structure following .NET Aspire patterns:
    - Provisions Ollama container with `Qwen3-Embedding-8B` embedding model (4096 dimensions)
    - Coordinates service startup and health checks
 
-2. **ElasticDemo.Api** ([Program.cs](src/ElasticDemo.Api/Program.cs), [Products feature](src/ElasticDemo.Api/Features/Products/)) - Web API service
+2. **ElasticDemo.Api** ([Program.cs](src/ElasticDemo.Api/Program.cs), [Products feature](src/ElasticDemo.Api/Features/Products/), [Applications feature](src/ElasticDemo.Api/Features/Applications/)) - Web API service
    - Minimal APIs pattern with feature-based folder structure
 
 3. **ElasticDemo.ServiceDefaults** - Shared configuration
@@ -77,12 +76,17 @@ public class CreateProductHandler(ElasticsearchClient client)
 | POST | `/api/products` | Create product |
 | GET | `/api/products/{id}` | Get product by ID |
 | DELETE | `/api/products/{id}` | Delete product |
+| POST | `/api/applications/init` | Initialize applications Elasticsearch index |
+| POST | `/api/applications/seed` | Seed applications from uploaded JSON file (IFormFile) |
+| POST | `/api/applications/search` | Search applications with filters |
 
-Search supports: query text (fuzzy matching on name/description), category filter, price range, date range, pagination (from/size).
+**Products search** supports: query text (fuzzy matching on name/description), category filter, price range, date range, pagination (from/size).
 
-Semantic search supports: natural language queries (kNN on embeddings), category filter, price range, date range, k (results), numCandidates.
+**Semantic search** supports: natural language queries (kNN on embeddings), category filter, price range, date range, k (results), numCandidates.
 
-Archive moves products with `CreatedAt` older than 1 year from the active index to yearly `products-archive-{year}` indices using ES Reindex + DeleteByQuery.
+**Archive** moves products with `CreatedAt` older than 1 year from the active index to yearly `products-archive-{year}` indices using ES Reindex + DeleteByQuery.
+
+**Applications search** supports: product, transaction, channel, status, date range, client lookup by firstName/lastName/nationalId/clientId/email across roles (MainClient, Spouse, CoApplicant), pagination (size), sort order (asc/desc by createdAt).
 
 ## Product Model
 
@@ -102,11 +106,35 @@ ProductVariant {
 ```
 
 Elasticsearch indices use an active/archive partitioning strategy:
-- **Active index** (`products`): warm tier, all CRUD operations target this index only
-- **Archive indices** (`products-archive-{year}`): cold tier, read-only via search
+- **Active index** (`products`): all CRUD operations target this index only
+- **Archive indices** (`products-archive-{year}`): read-only via search
 - **Search optimization**: `ProductIndex.IndicesForSearch()` computes target indices at the application level — skips archives when the requested date range falls entirely within the last year
 
 Approximately 30% of sample products include 2-5 variants with different colors, sizes (optional), price adjustments, and stock levels.
+
+## Application Model
+
+```csharp
+Application {
+    Id (string), Product (string), Transaction (string),
+    Channel (string), Branch (string?), Status (string),
+    User (string), CreatedAt (DateTimeOffset), UpdatedAt (DateTimeOffset),
+    MainClient (Client), Spouse (Client?),
+    CoApplicants (List<Client>) // nested mapping
+}
+
+Client {
+    Email (string), FirstName (string), LastName (string),
+    NationalId (string), ClientId (string)
+}
+```
+
+Elasticsearch index: `applications` (single active index, keyword fields with lowercase normalizer for client name/email fields, nested mapping for CoApplicants).
+
+The seed endpoint accepts a JSON file upload (`IFormFile`) and streams it into Elasticsearch in batches of 10,000 using `JsonSerializer.DeserializeAsyncEnumerable`.
+
+- **Do not read `applications.json`** — This is a large generated file; do not read it for context
+- **Do not commit `applications.json`** — This file is regenerated; exclude it from commits
 
 ## Development URLs
 
@@ -140,6 +168,16 @@ dotnet run tools/ProductGenerator/generate-products.cs
 
 Output: `src/ElasticDemo.Api/Features/Products/sample-products.json` (1000 products across 6 categories)
 
+## Regenerating Sample Applications
+
+```bash
+dotnet run tools/ApplicationGenerator/generate-applications.cs
+```
+
+Output: `src/ElasticDemo.Api/applications.json` (default 1000 applications with Polish client names)
+
+Supports `--count N` and `--indented` flags.
+
 ## Claude Code Skills
 
 Available slash commands for common tasks:
@@ -152,6 +190,7 @@ Available slash commands for common tasks:
 | `/semantic-search` | Vector similarity search | `/semantic-search lightweight running shoes under $150` |
 | `/seed-reset` | Reset and reseed the products index | `/seed-reset` |
 | `/generate-products` | Regenerate sample-products.json | `/generate-products 500` |
+| `/generate-applications` | Regenerate applications.json | `/generate-applications 10000` |
 
 ## Debugging with Aspire MCP Server
 
