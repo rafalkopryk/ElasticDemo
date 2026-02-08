@@ -1,5 +1,6 @@
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.IndexManagement;
+using Elastic.Clients.Elasticsearch.Mapping;
 
 namespace ElasticDemo.Api.Features.Applications;
 
@@ -36,31 +37,13 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
                     .Date(d => d.CreatedAt)
                     .Date(d => d.UpdatedAt)
                     .Object(o => o.MainClient, o => o
-                        .Properties(cp => cp
-                            .Keyword("email", k => k.Normalizer("lowercase"))
-                            .Keyword("firstName", k => k.Normalizer("lowercase"))
-                            .Keyword("lastName", k => k.Normalizer("lowercase"))
-                            .Keyword("nationalId")
-                            .Keyword("clientId")
-                        )
+                        .Properties(ClientProperties)
                     )
                     .Object(o => o.Spouse, o => o
-                        .Properties(cp => cp
-                            .Keyword("email", k => k.Normalizer("lowercase"))
-                            .Keyword("firstName", k => k.Normalizer("lowercase"))
-                            .Keyword("lastName", k => k.Normalizer("lowercase"))
-                            .Keyword("nationalId")
-                            .Keyword("clientId")
-                        )
+                        .Properties(ClientProperties)
                     )
                     .Nested(n => n.CoApplicants, n => n
-                        .Properties(cp => cp
-                            .Keyword("email", k => k.Normalizer("lowercase"))
-                            .Keyword("firstName", k => k.Normalizer("lowercase"))
-                            .Keyword("lastName", k => k.Normalizer("lowercase"))
-                            .Keyword("nationalId")
-                            .Keyword("clientId")
-                        )
+                        .Properties(ClientProperties)
                     )
                 )
             )
@@ -75,4 +58,15 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
         return Results.Ok(new InitializeApplicationIndexResponse(true,
             $"Created index '{ApplicationIndex.Active}'"));
     }
+
+    private static void ClientProperties<T>(PropertiesDescriptor<T> cp) => cp
+        .Keyword("email", k => k.Normalizer("lowercase"))
+        .Keyword("firstName", k => k
+            .Normalizer("lowercase")
+            .Fields(f => f.Text("text")))
+        .Keyword("lastName", k => k
+            .Normalizer("lowercase")
+            .Fields(f => f.Text("text")))
+        .Keyword("nationalId")
+        .Keyword("clientId");
 }

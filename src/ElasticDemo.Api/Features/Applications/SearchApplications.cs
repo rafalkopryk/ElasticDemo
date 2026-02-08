@@ -45,11 +45,11 @@ public class SearchApplicationsHandler(ElasticsearchClient client)
                 .Term(request.Channel, f => f.Channel)
                 .Term(request.Status, f => f.Status)
                 .DateRange(f => f.CreatedAt, request.CreatedAtFrom, request.CreatedAtTo)
-                .Client(request, c => c.FirstName, request.FirstName)
-                .Client(request, c => c.LastName, request.LastName, lowercase: true)
+                .Client(request, c => c.FirstName, request.FirstName, text: true)
+                .Client(request, c => c.LastName, request.LastName, text: true)
                 .Client(request, c => c.NationalId, request.NationalId)
                 .Client(request, c => c.ClientId, request.ClientId)
-                .Client(request, c => c.Email, request.Email, lowercase: true)
+                .Client(request, c => c.Email, request.Email)
                 .Build(q))
             .Sort(sort => sort
                 .Field(f => f.CreatedAt, sortOrder)
@@ -69,7 +69,7 @@ public class SearchApplicationsHandler(ElasticsearchClient client)
 public class ApplicationQueryBuilder
 {
     private readonly List<Action<QueryDescriptor<Application>>> _queries = [];
-    private readonly List<(string field, string value)> _clientTerms = [];
+    private readonly List<(string field, string value, bool text)> _clientTerms = [];
     private List<ClientRole>? _clientRoles;
 
     public ApplicationQueryBuilder Term(string? value, Expression<Func<Application, object?>> field)
@@ -102,7 +102,7 @@ public class ApplicationQueryBuilder
         SearchApplicationsRequest request,
         Expression<Func<Client, object>> field,
         string? value,
-        bool lowercase = false)
+        bool text = false)
     {
         if (string.IsNullOrWhiteSpace(value))
             return this;
@@ -111,7 +111,7 @@ public class ApplicationQueryBuilder
 
         var fieldName = ((MemberExpression)field.Body).Member.Name;
         var camelCase = char.ToLowerInvariant(fieldName[0]) + fieldName[1..];
-        _clientTerms.Add((camelCase, lowercase ? value.ToLowerInvariant() : value));
+        _clientTerms.Add((camelCase, text ? value : value.ToLowerInvariant(), text));
 
         return this;
     }
@@ -157,7 +157,9 @@ public class ApplicationQueryBuilder
     }
 
     private Action<QueryDescriptor<Application>>[] BuildClientTerms(string prefix) =>
-        _clientTerms.Select<(string field, string value), Action<QueryDescriptor<Application>>>(
-            t => m => m.Term(term => term.Field($"{prefix}.{t.field}").Value(t.value))
+        _clientTerms.Select<(string field, string value, bool text), Action<QueryDescriptor<Application>>>(
+            t => t.text
+                ? m => m.Match(match => match.Field($"{prefix}.{t.field}.text").Query(t.value))
+                : m => m.Term(term => term.Field($"{prefix}.{t.field}").Value(t.value))
         ).ToArray();
 }
