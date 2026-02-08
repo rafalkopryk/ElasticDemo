@@ -188,7 +188,7 @@ Available slash commands for common tasks:
 | `/stop` | Stop the running Aspire application | `/stop` |
 | `/add-product` | Add a product to the index | `/add-product iPhone 17 Pro, Electronics, $1199` |
 | `/semantic-search` | Vector similarity search | `/semantic-search lightweight running shoes under $150` |
-| `/seed-reset` | Reset and reseed the products index | `/seed-reset` |
+| `/seed-reset` | Reset and reseed indices (products/applications/all) | `/seed-reset applications` |
 | `/generate-products` | Regenerate sample-products.json | `/generate-products 500` |
 | `/generate-applications` | Regenerate applications.json | `/generate-applications 10000` |
 
