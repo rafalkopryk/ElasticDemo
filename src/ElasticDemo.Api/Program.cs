@@ -56,9 +56,10 @@ app.MapPost("/api/products/init", async (InitializeIndexHandler handler) =>
     await handler.Handle())
     .WithName("InitializeProductIndex");
 
-app.MapPost("/api/products/seed", async (SeedProductsHandler handler) =>
-    await handler.Handle())
-    .WithName("SeedProducts");
+app.MapPost("/api/products/seed", async (SeedProductsHandler handler, IFormFile file) =>
+    await handler.Handle(file))
+    .WithName("SeedProducts")
+    .DisableAntiforgery();
 
 app.MapPost("/api/products/search", async (
     SearchProductsHandler handler,

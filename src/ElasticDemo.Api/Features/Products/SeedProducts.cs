@@ -14,7 +14,6 @@ public record SeedProductsResponse(
 
 public class SeedProductsHandler(
     ElasticsearchClient client,
-    IWebHostEnvironment env,
     ILogger<SeedProductsHandler> logger,
     IConfiguration configuration,
     EmbeddingService embeddingService)
@@ -26,29 +25,10 @@ public class SeedProductsHandler(
     private int BatchSize => SkipEmbeddings ? 5_000 : 500;
     private record BatchResult(int Success, int Failed, string? Error);
 
-    private async IAsyncEnumerable<Product> StreamProductsAsync()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        var basePath = env.IsDevelopment()
-            ? env.ContentRootPath
-            : AppContext.BaseDirectory;
-
-        var filePath = Path.Combine(basePath, "Features", "Products", "sample-products.json");
-
-        using var fileStream = File.OpenRead(filePath);
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        await foreach (var product in JsonSerializer.DeserializeAsyncEnumerable<Product>(fileStream, options))
-        {
-            if (product != null)
-            {
-                yield return product;
-            }
-        }
-    }
+        PropertyNameCaseInsensitive = true
+    };
 
     private async Task<BatchResult> SendBatchAsync(List<Product> batch, int batchNumber)
     {
@@ -113,7 +93,7 @@ public class SeedProductsHandler(
         return results;
     }
 
-    public async Task<IResult> Handle()
+    public async Task<IResult> Handle(IFormFile file)
     {
         var batchSize = BatchSize;
         var skipEmbeddings = SkipEmbeddings;
@@ -129,8 +109,10 @@ public class SeedProductsHandler(
 
         try
         {
-            await foreach (var product in StreamProductsAsync())
+            using var stream = file.OpenReadStream();
+            await foreach (var product in JsonSerializer.DeserializeAsyncEnumerable<Product>(stream, JsonOptions))
             {
+                if (product is null) continue;
                 currentBatch.Add(product);
 
                 if (currentBatch.Count >= batchSize)
@@ -184,14 +166,6 @@ public class SeedProductsHandler(
                 failedCount += result.Failed;
                 if (result.Error != null) errors.Add(result.Error);
             }
-        }
-        catch (FileNotFoundException ex)
-        {
-            return Results.Problem(
-                detail: $"Sample products file not found: {ex.Message}",
-                statusCode: 500,
-                title: "File Not Found"
-            );
         }
         catch (JsonException ex)
         {

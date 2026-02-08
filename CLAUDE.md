@@ -69,7 +69,7 @@ public class CreateProductHandler(ElasticsearchClient client)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/products/init` | Initialize Elasticsearch index |
-| POST | `/api/products/seed` | Seed with sample products |
+| POST | `/api/products/seed` | Seed products from uploaded JSON file (IFormFile) |
 | POST | `/api/products/search` | Full-text search with filters |
 | POST | `/api/products/semantic-search` | Vector/semantic search using embeddings |
 | POST | `/api/products/archive` | Move products older than 1 year to archive indices |
