@@ -1,6 +1,8 @@
 #!/usr/bin/env dotnet run
+#:package Bogus@35.6.5
 
 using System.Text.Json;
+using Bogus;
 
 // Configuration - parse command line arguments
 var outputPath = Path.Combine("..", "..", "src", "ElasticDemo.Api", "applications.json");
@@ -23,45 +25,21 @@ for (var i = 0; i < args.Length; i++)
     }
 }
 
-var random = new Random(42);
-
-// --- Name pools (Polish names for realism) ---
-var firstNames = new[] {
-    "Adam", "Piotr", "Krzysztof", "Tomasz", "Paweł", "Andrzej", "Jan", "Marcin", "Marek", "Michał",
-    "Grzegorz", "Józef", "Łukasz", "Rafał", "Dariusz", "Jakub", "Robert", "Mateusz", "Kamil", "Artur",
-    "Anna", "Maria", "Katarzyna", "Małgorzata", "Agnieszka", "Barbara", "Ewa", "Magdalena", "Monika", "Joanna",
-    "Dorota", "Aleksandra", "Natalia", "Beata", "Justyna", "Karolina", "Iwona", "Elżbieta", "Zofia", "Weronika"
-};
-
-var lastNames = new[] {
-    "Nowak", "Kowalski", "Wiśniewski", "Wójcik", "Kowalczyk", "Kamiński", "Lewandowski", "Zieliński", "Szymański", "Woźniak",
-    "Dąbrowski", "Kozłowski", "Jankowski", "Mazur", "Kwiatkowski", "Krawczyk", "Piotrowski", "Grabowski", "Nowakowski", "Pawłowski",
-    "Michalski", "Adamczyk", "Dudek", "Zając", "Wieczorek", "Jabłoński", "Król", "Majewski", "Olszewski", "Jaworski",
-    "Stępień", "Malinowski", "Górski", "Rutkowski", "Sikora", "Walczak", "Baran", "Laskowski", "Kubiak", "Witkowski"
-};
+Randomizer.Seed = new Random(42);
+var faker = new Faker("pl");
 
 // --- Product definitions ---
-var products = new (string Name, string Code, double Weight)[]
-{
-    ("CashLoan", "CL", 0.50),
-    ("Installments", "IL", 0.30),
-    ("CreditCards", "CC", 0.15),
-    ("Overdraft", "OV", 0.05)
-};
+var productNames = new[] { "CashLoan", "Installment", "CreditCard", "Overdraft" };
+var productCodes = new[] { "CL", "IL", "CC", "OV" };
+var productWeights = new[] { 0.50f, 0.30f, 0.15f, 0.05f };
 
-var channels = new (string Name, double Weight)[]
-{
-    ("Online", 0.65),
-    ("Branch", 0.25),
-    ("Marketing", 0.10)
-};
+var channelNames = new[] { "Online", "Branch", "Marketing" };
+var channelWeights = new[] { 0.65f, 0.25f, 0.10f };
 
-var transactions = new (string Name, double Weight)[]
-{
-    ("NewProduct", 0.80),
-    ("Renewal", 0.15),
-    ("Amendment", 0.05)
-};
+var transactionNames = new[] { "NewProduct", "Renewal", "Amendment" };
+var transactionWeights = new[] { 0.80f, 0.15f, 0.05f };
+
+var emailDomains = new[] { "gmail.com", "wp.pl", "onet.pl" };
 
 // --- Pre-generate client pool ---
 var uniqueClientCount = Math.Max(10, (int)(totalCount * 0.8));
@@ -72,19 +50,19 @@ var usedClientIds = new HashSet<string>();
 
 for (var c = 0; c < uniqueClientCount; c++)
 {
-    var firstName = firstNames[random.Next(firstNames.Length)];
-    var lastName = lastNames[random.Next(lastNames.Length)];
+    var firstName = faker.Name.FirstName();
+    var lastName = faker.Name.LastName();
 
     string nationalId;
-    do { nationalId = random.Next(10_000_000, 99_999_999).ToString("D8") + random.Next(100, 999).ToString(); }
+    do { nationalId = GeneratePesel(faker); }
     while (!usedNationalIds.Add(nationalId));
 
     string clientId;
-    do { clientId = $"CIF{random.Next(0, 999_999_999):D9}"; }
+    do { clientId = $"CIF{faker.Random.Number(0, 999_999_999):D9}"; }
     while (!usedClientIds.Add(clientId));
 
-    var emailDomain = random.Next(3) switch { 0 => "gmail.com", 1 => "wp.pl", _ => "onet.pl" };
-    var email = $"{firstName.ToLower()}.{lastName.ToLower()}{random.Next(1, 999)}@{emailDomain}";
+    var emailDomain = faker.Random.ArrayElement(emailDomains);
+    var email = $"{firstName.ToLower()}.{lastName.ToLower()}{faker.Random.Number(1, 999)}@{emailDomain}";
 
     clients.Add((firstName, lastName, nationalId, clientId, email));
 }
@@ -99,7 +77,7 @@ var applicationClientIndices = new List<int>(totalCount);
 var frequentCount = Math.Min(5, uniqueClientCount);
 for (var f = 0; f < frequentCount; f++)
 {
-    var appCount = random.Next(3, 6); // 3-5
+    var appCount = faker.Random.Number(3, 5);
     for (var a = 0; a < appCount; a++)
         applicationClientIndices.Add(f);
 }
@@ -128,14 +106,14 @@ while (applicationClientIndices.Count < totalCount)
     else
     {
         // If we run out of unique clients, reuse from pool
-        applicationClientIndices.Add(random.Next(uniqueClientCount));
+        applicationClientIndices.Add(faker.Random.Number(0, uniqueClientCount - 1));
     }
 }
 
 // Shuffle the assignment list
 for (var s = applicationClientIndices.Count - 1; s > 0; s--)
 {
-    var j = random.Next(s + 1);
+    var j = faker.Random.Number(0, s);
     (applicationClientIndices[s], applicationClientIndices[j]) = (applicationClientIndices[j], applicationClientIndices[s]);
 }
 
@@ -145,7 +123,7 @@ var usedEmployeeIds = new HashSet<string>();
 for (var e = 0; e < 500; e++)
 {
     string eid;
-    do { eid = $"x{random.Next(0, 999_999):D6}"; }
+    do { eid = $"X{faker.Random.Number(0, 999_999):D6}"; }
     while (!usedEmployeeIds.Add(eid));
     employees[e] = eid;
 }
@@ -153,7 +131,7 @@ for (var e = 0; e < 500; e++)
 // --- Streaming JSON output ---
 var now = DateTimeOffset.UtcNow;
 var sevenDaysAgo = now.AddDays(-7);
-var threeYearsInDays = 365 * 3;
+var threeYearsAgo = now.AddDays(-365 * 3);
 
 var fullPath = Path.GetFullPath(outputPath);
 Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
@@ -169,79 +147,57 @@ var sequentialCounters = new Dictionary<string, int>(); // key: "yyyyMMdd/code" 
 for (var i = 0; i < totalCount; i++)
 {
     // --- Product ---
-    var productRoll = random.NextDouble();
-    var cumulative = 0.0;
-    var productIdx = 0;
-    for (var p = 0; p < products.Length; p++)
-    {
-        cumulative += products[p].Weight;
-        if (productRoll < cumulative) { productIdx = p; break; }
-    }
-    var product = products[productIdx];
+    var productIdx = Array.IndexOf(productNames, faker.Random.WeightedRandom(productNames, productWeights));
+    var productName = productNames[productIdx];
+    var productCode = productCodes[productIdx];
 
     // --- Dates ---
-    var createdAt = now.AddDays(-random.Next(1, threeYearsInDays));
-    var updatedAt = createdAt.AddDays(random.Next(1, 31));
+    var createdAt = faker.Date.BetweenOffset(threeYearsAgo, now.AddDays(-1));
+    var updatedAt = createdAt.AddDays(faker.Random.Number(1, 30));
     if (updatedAt > now) updatedAt = now;
 
     // --- ID ---
     var dateKey = createdAt.ToString("yyyyMMdd");
-    var seqKey = $"{dateKey}/{product.Code}";
+    var seqKey = $"{dateKey}/{productCode}";
     sequentialCounters.TryGetValue(seqKey, out var seq);
     seq++;
     sequentialCounters[seqKey] = seq;
-    var id = $"{dateKey}/{product.Code}/{seq:D5}";
+    var id = $"{dateKey}/{productCode}/{seq:D5}";
 
     // --- Channel ---
-    var channelRoll = random.NextDouble();
-    cumulative = 0.0;
-    var channelIdx = 0;
-    for (var ch = 0; ch < channels.Length; ch++)
-    {
-        cumulative += channels[ch].Weight;
-        if (channelRoll < cumulative) { channelIdx = ch; break; }
-    }
-    var channel = channels[channelIdx].Name;
+    var channel = faker.Random.WeightedRandom(channelNames, channelWeights);
 
     // --- Transaction ---
-    var txRoll = random.NextDouble();
-    cumulative = 0.0;
-    var txIdx = 0;
-    for (var t = 0; t < transactions.Length; t++)
-    {
-        cumulative += transactions[t].Weight;
-        if (txRoll < cumulative) { txIdx = t; break; }
-    }
-    var transaction = transactions[txIdx].Name;
+    var transaction = faker.Random.WeightedRandom(transactionNames, transactionWeights);
 
     // --- Status ---
     string status;
     if (createdAt > sevenDaysAgo)
         status = "Active";
     else
-        status = random.Next(2) == 0 ? "Rejected" : "Completed";
+        status = faker.Random.Bool() ? "Rejected" : "Completed";
 
     // --- Branch ---
-    string? branch = channel == "Branch" ? $"{random.Next(1, 101):D3}" : null;
+    string? branch = channel == "Branch" ? $"{faker.Random.Number(1, 100):D3}" : null;
 
     // --- Client ---
     var clientIdx = applicationClientIndices[i];
     var client = clients[clientIdx];
 
     // --- User ---
-    var user = channel == "Online" ? client.ClientId : employees[random.Next(employees.Length)];
+    var user = channel == "Online" ? client.ClientId : employees[faker.Random.Number(0, employees.Length - 1)];
 
     // --- Spouse (25%) ---
-    var hasSpouse = random.NextDouble() < 0.25;
+    var hasSpouse = faker.Random.Bool(0.25f);
 
     // --- CoApplicants (20%, always exactly 1) ---
-    var hasCoApplicant = random.NextDouble() < 0.20;
+    var hasCoApplicant = faker.Random.Bool(0.20f);
 
     // --- Write JSON ---
     writer.WriteStartObject();
 
     writer.WriteString("id", id);
-    writer.WriteString("product", product.Name);
+    writer.WriteString("product", productName);
     writer.WriteString("transaction", transaction);
     writer.WriteString("channel", channel);
 
@@ -262,7 +218,7 @@ for (var i = 0; i < totalCount; i++)
     // spouse
     if (hasSpouse)
     {
-        var spouseIdx = random.Next(uniqueClientCount);
+        var spouseIdx = faker.Random.Number(0, uniqueClientCount - 1);
         // Avoid same person as main client
         if (spouseIdx == clientIdx) spouseIdx = (spouseIdx + 1) % uniqueClientCount;
         writer.WritePropertyName("spouse");
@@ -278,7 +234,7 @@ for (var i = 0; i < totalCount; i++)
     writer.WriteStartArray();
     if (hasCoApplicant)
     {
-        var coIdx = random.Next(uniqueClientCount);
+        var coIdx = faker.Random.Number(0, uniqueClientCount - 1);
         if (coIdx == clientIdx) coIdx = (coIdx + 1) % uniqueClientCount;
         WriteClient(writer, clients[coIdx]);
     }
@@ -298,6 +254,39 @@ writer.WriteEndArray();
 writer.Flush();
 
 Console.WriteLine($"\rGenerated {totalCount:N0} applications to: {fullPath}");
+
+static string GeneratePesel(Faker faker)
+{
+    var birthDate = faker.Date.Between(new DateTime(1950, 1, 1), new DateTime(2005, 12, 31));
+    var year = birthDate.Year;
+    var month = birthDate.Month;
+    var day = birthDate.Day;
+
+    var yy = year % 100;
+    var mm = month + (year >= 2000 ? 20 : 0);
+
+    var serial = faker.Random.Number(0, 9999);
+
+    var digits = new int[11];
+    digits[0] = yy / 10;
+    digits[1] = yy % 10;
+    digits[2] = mm / 10;
+    digits[3] = mm % 10;
+    digits[4] = day / 10;
+    digits[5] = day % 10;
+    digits[6] = serial / 1000;
+    digits[7] = (serial / 100) % 10;
+    digits[8] = (serial / 10) % 10;
+    digits[9] = serial % 10;
+
+    var weights = new[] { 1, 3, 7, 9, 1, 3, 7, 9, 1, 3 };
+    var sum = 0;
+    for (var w = 0; w < 10; w++)
+        sum += digits[w] * weights[w];
+    digits[10] = (10 - (sum % 10)) % 10;
+
+    return string.Concat(digits);
+}
 
 static void WriteClient(Utf8JsonWriter writer, (string FirstName, string LastName, string NationalId, string ClientId, string Email) client)
 {
