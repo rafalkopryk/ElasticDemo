@@ -5,16 +5,11 @@
 POST {{baseUrl}}/api/products/init
 
 ### Seed sample products
-# Populates the index with sample data for testing (upload JSON file)
+# Populates the index with sample data for testing
 POST {{baseUrl}}/api/products/seed
-Content-Type: multipart/form-data; boundary=----boundary
-
-------boundary
-Content-Disposition: form-data; name="file"; filename="sample-products.json"
-Content-Type: application/json
+Content-Type: application/octet-stream
 
 < ./Features/Products/sample-products.json
-------boundary--
 
 ### Search all products
 POST {{baseUrl}}/api/products/search

@@ -26,7 +26,7 @@ dotnet run --project src/ElasticDemo.Api
 Use `src/ElasticDemo.Api/products.http` and `src/ElasticDemo.Api/applications.http` to test API workflows:
 
 **Products:** init, seed, search (text/semantic), CRUD, archive
-**Applications:** init, seed (file upload), search (by product/channel/status/date/client across roles)
+**Applications:** init, seed (octet-stream), search (by product/channel/status/date/client across roles)
 
 The files use `@baseUrl` variable - modify for HTTPS if needed.
 
@@ -69,7 +69,7 @@ public class CreateProductHandler(ElasticsearchClient client)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/products/init` | Initialize Elasticsearch index |
-| POST | `/api/products/seed` | Seed products from uploaded JSON file (IFormFile) |
+| POST | `/api/products/seed` | Seed products from raw JSON body stream |
 | POST | `/api/products/search` | Full-text search with filters |
 | POST | `/api/products/semantic-search` | Vector/semantic search using embeddings |
 | POST | `/api/products/archive` | Move products older than 1 year to archive indices |
@@ -77,7 +77,7 @@ public class CreateProductHandler(ElasticsearchClient client)
 | GET | `/api/products/{id}` | Get product by ID |
 | DELETE | `/api/products/{id}` | Delete product |
 | POST | `/api/applications/init` | Initialize applications Elasticsearch index |
-| POST | `/api/applications/seed` | Seed applications from uploaded JSON file (IFormFile) |
+| POST | `/api/applications/seed` | Seed applications from raw JSON body stream |
 | POST | `/api/applications/search` | Search applications with filters |
 
 **Products search** supports: query text (fuzzy matching on name/description), category filter, price range, date range, pagination (from/size).
@@ -131,7 +131,7 @@ Client {
 
 Elasticsearch index: `applications` (single active index, keyword fields with lowercase normalizer for client name/email fields, nested mapping for CoApplicants).
 
-The seed endpoint accepts a JSON file upload (`IFormFile`) and streams it into Elasticsearch in batches of 10,000 using `JsonSerializer.DeserializeAsyncEnumerable`.
+The seed endpoint accepts a raw JSON body stream (`application/octet-stream`) and streams it into Elasticsearch in batches of 10,000 using `JsonSerializer.DeserializeAsyncEnumerable`.
 
 - **Do not read `applications.json`** — This is a large generated file; do not read it for context
 - **Do not commit `applications.json`** — This file is regenerated; exclude it from commits

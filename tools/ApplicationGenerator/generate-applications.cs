@@ -5,7 +5,7 @@ using System.Text.Json;
 using Bogus;
 
 // Configuration - parse command line arguments
-var outputPath = Path.Combine("..", "..", "src", "ElasticDemo.Api", "applications.json");
+var outputPath = Path.Combine("src", "ElasticDemo.Api", "applications.json");
 var totalCount = 1000;
 var writeIndented = false;
 

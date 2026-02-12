@@ -75,7 +75,7 @@ public class SeedApplicationsHandler(
         }
     }
 
-    public async Task<IResult> Handle(IFormFile file)
+    public async Task<IResult> Handle(Stream body)
     {
         logger.LogInformation("Seeding applications with BatchSize={BatchSize}", BatchSize);
 
@@ -89,8 +89,7 @@ public class SeedApplicationsHandler(
 
         try
         {
-            using var stream = file.OpenReadStream();
-            await foreach (var application in JsonSerializer.DeserializeAsyncEnumerable<Application>(stream, JsonOptions))
+            await foreach (var application in JsonSerializer.DeserializeAsyncEnumerable<Application>(body, JsonOptions))
             {
                 if (application is null) continue;
                 currentBatch.Add(application);

@@ -93,7 +93,7 @@ public class SeedProductsHandler(
         return results;
     }
 
-    public async Task<IResult> Handle(IFormFile file)
+    public async Task<IResult> Handle(Stream body)
     {
         var batchSize = BatchSize;
         var skipEmbeddings = SkipEmbeddings;
@@ -109,8 +109,7 @@ public class SeedProductsHandler(
 
         try
         {
-            using var stream = file.OpenReadStream();
-            await foreach (var product in JsonSerializer.DeserializeAsyncEnumerable<Product>(stream, JsonOptions))
+            await foreach (var product in JsonSerializer.DeserializeAsyncEnumerable<Product>(body, JsonOptions))
             {
                 if (product is null) continue;
                 currentBatch.Add(product);

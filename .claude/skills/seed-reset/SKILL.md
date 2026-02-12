@@ -16,7 +16,7 @@ Run these curl commands sequentially, reporting success/failure:
 2. `curl -s -X DELETE "http://localhost:9200/products-archive-*"` (ignore 404)
 3. `curl -s -X DELETE "http://localhost:9200/_index_template/products-archive-template"` (ignore 404)
 4. `curl -ks -X POST "https://localhost:7232/api/products/init"`
-5. `curl -ks -X POST "https://localhost:7232/api/products/seed" -F "file=@src/ElasticDemo.Api/Features/Products/sample-products.json"`
+5. `curl -ks -T src/ElasticDemo.Api/Features/Products/sample-products.json -X POST "https://localhost:7232/api/products/seed" -H "Content-Type: application/octet-stream"`
 
 Verify: `curl -s "http://localhost:9200/products/_count"` — report product count.
 
@@ -26,6 +26,6 @@ Run these curl commands sequentially, reporting success/failure:
 
 1. `curl -s -X DELETE "http://localhost:9200/applications"` (ignore 404)
 2. `curl -ks -X POST "https://localhost:7232/api/applications/init"`
-3. `curl -ks -X POST "https://localhost:7232/api/applications/seed" -F "file=@src/ElasticDemo.Api/applications.json"`
+3. `curl -ks -T src/ElasticDemo.Api/applications.json -X POST "https://localhost:7232/api/applications/seed" -H "Content-Type: application/octet-stream"`
 
 Verify: `curl -s "http://localhost:9200/applications/_count"` — report application count.

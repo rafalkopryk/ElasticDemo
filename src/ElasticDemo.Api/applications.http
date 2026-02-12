@@ -3,17 +3,13 @@
 ### Initialize Applications index
 POST {{baseUrl}}/api/applications/init
 
+
 ### Seed applications
 # Bulk indexes applications from uploaded JSON file (streams without buffering)
 POST {{baseUrl}}/api/applications/seed
-Content-Type: multipart/form-data; boundary=----boundary
-
-------boundary
-Content-Disposition: form-data; name="file"; filename="applications.json"
-Content-Type: application/json
+Content-Type: application/octet-stream
 
 < ./applications.json
-------boundary--
 
 ### Search - all applications (default: 100 results, newest first)
 POST {{baseUrl}}/api/applications/search

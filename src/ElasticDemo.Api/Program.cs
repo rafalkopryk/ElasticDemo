@@ -5,6 +5,8 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = null);
+
 builder.AddServiceDefaults();
 builder.AddElasticsearchClient("elasticsearch");
 if (builder.Configuration.GetValue<bool>("Embeddings:UseMock"))
@@ -56,10 +58,9 @@ app.MapPost("/api/products/init", async (InitializeIndexHandler handler) =>
     await handler.Handle())
     .WithName("InitializeProductIndex");
 
-app.MapPost("/api/products/seed", async (SeedProductsHandler handler, IFormFile file) =>
-    await handler.Handle(file))
-    .WithName("SeedProducts")
-    .DisableAntiforgery();
+app.MapPost("/api/products/seed", async (SeedProductsHandler handler, HttpRequest request) =>
+    await handler.Handle(request.Body))
+    .WithName("SeedProducts");
 
 app.MapPost("/api/products/search", async (
     SearchProductsHandler handler,
@@ -101,10 +102,9 @@ app.MapPost("/api/applications/init", async (InitializeApplicationIndexHandler h
     await handler.Handle())
     .WithName("InitializeApplicationIndex");
 
-app.MapPost("/api/applications/seed", async (SeedApplicationsHandler handler, IFormFile file) =>
-    await handler.Handle(file))
-    .WithName("SeedApplications")
-    .DisableAntiforgery();
+app.MapPost("/api/applications/seed", async (SeedApplicationsHandler handler, HttpRequest request) =>
+    await handler.Handle(request.Body))
+    .WithName("SeedApplications");
 
 app.MapPost("/api/applications/search", async (
     SearchApplicationsHandler handler,
