@@ -30,10 +30,10 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
                     .Keyword(k => k.Id)
                     .Keyword(k => k.Product)
                     .Keyword(k => k.Transaction)
-                    .Keyword(k => k.Channel)
+                    .Keyword(k => k.Channel, k => k.Normalizer("lowercase"))
                     .Keyword(k => k.Branch)
-                    .Keyword(k => k.Status)
-                    .Keyword(k => k.User)
+                    .Keyword(k => k.Status, k => k.Normalizer("lowercase"))
+                    .Keyword(k => k.User, k => k.Normalizer("lowercase"))
                     .Date(d => d.CreatedAt)
                     .Date(d => d.UpdatedAt)
                     .Object(o => o.MainClient, o => o
@@ -61,12 +61,8 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
 
     private static void ClientProperties<T>(PropertiesDescriptor<T> cp) => cp
         .Keyword("email", k => k.Normalizer("lowercase"))
-        .Keyword("firstName", k => k
-            .Normalizer("lowercase")
-            .Fields(f => f.Text("text")))
-        .Keyword("lastName", k => k
-            .Normalizer("lowercase")
-            .Fields(f => f.Text("text")))
+        .Keyword("firstName", k => k.Normalizer("lowercase"))
+        .Keyword("lastName", k => k.Normalizer("lowercase"))
         .Keyword("nationalId")
         .Keyword("clientId");
 }

@@ -1,9 +1,11 @@
 using System.Linq.Expressions;
+using System.Text.Json.Serialization;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 
 namespace ElasticDemo.Api.Features.Applications;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ClientRole { MainClient, Spouse, CoApplicant }
 
 public record SearchApplicationsRequest(
@@ -45,8 +47,8 @@ public class SearchApplicationsHandler(ElasticsearchClient client)
                 .Term(request.Channel, f => f.Channel)
                 .Term(request.Status, f => f.Status)
                 .DateRange(f => f.CreatedAt, request.CreatedAtFrom, request.CreatedAtTo)
-                .Client(request, c => c.FirstName, request.FirstName, text: true)
-                .Client(request, c => c.LastName, request.LastName, text: true)
+                .Client(request, c => c.FirstName, request.FirstName)
+                .Client(request, c => c.LastName, request.LastName)
                 .Client(request, c => c.NationalId, request.NationalId)
                 .Client(request, c => c.ClientId, request.ClientId)
                 .Client(request, c => c.Email, request.Email)
@@ -69,7 +71,7 @@ public class SearchApplicationsHandler(ElasticsearchClient client)
 public class ApplicationQueryBuilder
 {
     private readonly List<Action<QueryDescriptor<Application>>> _queries = [];
-    private readonly List<(string field, string value, bool text)> _clientTerms = [];
+    private readonly List<(string field, string value)> _clientTerms = [];
     private List<ClientRole>? _clientRoles;
 
     public ApplicationQueryBuilder Term(string? value, Expression<Func<Application, object?>> field)
@@ -101,8 +103,7 @@ public class ApplicationQueryBuilder
     public ApplicationQueryBuilder Client(
         SearchApplicationsRequest request,
         Expression<Func<Client, object>> field,
-        string? value,
-        bool text = false)
+        string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return this;
@@ -111,7 +112,7 @@ public class ApplicationQueryBuilder
 
         var fieldName = ((MemberExpression)field.Body).Member.Name;
         var camelCase = char.ToLowerInvariant(fieldName[0]) + fieldName[1..];
-        _clientTerms.Add((camelCase, text ? value : value.ToLowerInvariant(), text));
+        _clientTerms.Add((camelCase, value));
 
         return this;
     }
@@ -135,9 +136,9 @@ public class ApplicationQueryBuilder
 
         var roleQueries = roles.Select(role => (Action<QueryDescriptor<Application>>)(role switch
             {
-                ClientRole.CoApplicant => s => s.Nested(n => n.Path("coApplicants")
+                ClientRole.CoApplicant => s => s.Nested(n => n.Path(_ => _.CoApplicants)
                     .Query(nq => nq.Bool(bb => bb.Must(BuildClientTerms("coApplicants"))))),
-                ClientRole.MainClient => s => s.Bool(bb => bb.Must(BuildClientTerms("mainClient"))),
+                ClientRole.MainClient => s => s.Bool(bb => bb.Must( BuildClientTerms("mainClient"))),
                 ClientRole.Spouse => s => s.Bool(bb => bb.Must(BuildClientTerms("spouse"))),
                 _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
             }))
@@ -157,9 +158,7 @@ public class ApplicationQueryBuilder
     }
 
     private Action<QueryDescriptor<Application>>[] BuildClientTerms(string prefix) =>
-        _clientTerms.Select<(string field, string value, bool text), Action<QueryDescriptor<Application>>>(
-            t => t.text
-                ? m => m.Match(match => match.Field($"{prefix}.{t.field}.text").Query(t.value))
-                : m => m.Term(term => term.Field($"{prefix}.{t.field}").Value(t.value))
+        _clientTerms.Select<(string field, string value), Action<QueryDescriptor<Application>>>(
+            t => m => m.Term(term => term.Field($"{prefix}.{t.field}").Value(t.value))
         ).ToArray();
 }
