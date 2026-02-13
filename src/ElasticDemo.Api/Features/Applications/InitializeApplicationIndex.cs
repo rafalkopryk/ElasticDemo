@@ -26,6 +26,7 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
                 )
             )
             .Mappings(m => m
+                .Dynamic(DynamicMapping.Strict)
                 .Properties<Application>(p => p
                     .Keyword(k => k.Id)
                     .Keyword(k => k.Product)
