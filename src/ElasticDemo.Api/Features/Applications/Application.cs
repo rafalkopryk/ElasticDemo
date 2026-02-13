@@ -9,6 +9,12 @@ public record Client
     public required string ClientId { get; init; }
 }
 
+public record Applicant
+{
+    public required Client Client { get; init; }
+    public Client? Spouse { get; init; }
+}
+
 public record Application
 {
     public required string Id { get; init; }
@@ -20,14 +26,13 @@ public record Application
     public required string User { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset UpdatedAt { get; init; }
-    public required Client MainClient { get; init; }
-    public Client? Spouse { get; init; }
-    public List<Client> CoApplicants { get; init; } = [];
+    public required Applicant MainApplicant { get; init; }
+    public List<Applicant> CoApplicants { get; init; } = [];
 }
 
 public static class ApplicationIndex
 {
     public const string Alias = "applications";
-    public const string CurrentVersion = "applications_v1";
+    public const string CurrentVersion = "applications_v2";
     public const string VersionPattern = "applications_v*";
 }

@@ -46,7 +46,7 @@ Content-Type: application/json
   "size": 10
 }
 
-### Search - by mainClient name (default when roles omitted)
+### Search - by main applicant name (default when roles omitted)
 POST {{baseUrl}}/api/applications/search
 Content-Type: application/json
 
@@ -56,7 +56,7 @@ Content-Type: application/json
   "size": 10
 }
 
-### Search - by mainClient nationalId
+### Search - by main applicant nationalId
 POST {{baseUrl}}/api/applications/search
 Content-Type: application/json
 
@@ -65,7 +65,7 @@ Content-Type: application/json
   "size": 10
 }
 
-### Search - by spouse only
+### Search - by spouse only (searches across main applicant's and co-applicants' spouses)
 POST {{baseUrl}}/api/applications/search
 Content-Type: application/json
 
@@ -75,7 +75,7 @@ Content-Type: application/json
   "size": 10
 }
 
-### Search - across mainClient and spouse
+### Search - across main applicant and spouse
 POST {{baseUrl}}/api/applications/search
 Content-Type: application/json
 

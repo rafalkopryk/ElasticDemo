@@ -86,7 +86,7 @@ public class CreateProductHandler(ElasticsearchClient client)
 
 **Archive** moves products with `CreatedAt` older than 1 year from the active index to yearly `products-archive-{year}` indices using ES Reindex + DeleteByQuery.
 
-**Applications search** supports: product, transaction, channel, status, date range, client lookup by firstName/lastName/nationalId/clientId/email across roles (MainClient, Spouse, CoApplicant), pagination (size), sort order (asc/desc by createdAt).
+**Applications search** supports: product, transaction, channel, status, date range, client lookup by firstName/lastName/nationalId/clientId/email across roles (MainClient, Spouse, CoApplicant), pagination (size), sort order (asc/desc by createdAt). Spouse role searches across both mainApplicant.spouse and coApplicants.spouse.
 
 ## Product Model
 
@@ -119,8 +119,12 @@ Application {
     Id (string), Product (string), Transaction (string),
     Channel (string), Branch (string?), Status (string),
     User (string), CreatedAt (DateTimeOffset), UpdatedAt (DateTimeOffset),
-    MainClient (Client), Spouse (Client?),
-    CoApplicants (List<Client>) // nested mapping
+    MainApplicant (Applicant),
+    CoApplicants (List<Applicant>) // nested mapping
+}
+
+Applicant {
+    Client (Client), Spouse (Client?)
 }
 
 Client {
@@ -129,7 +133,7 @@ Client {
 }
 ```
 
-Elasticsearch index: `applications` (single active index, keyword fields with lowercase normalizer for client name/email fields, nested mapping for CoApplicants).
+Elasticsearch index: `applications` (single active index, keyword fields with lowercase normalizer for client name/email fields, nested mapping for CoApplicants). Each Applicant contains a Client sub-object and an optional Spouse sub-object.
 
 The seed endpoint accepts a raw JSON body stream (`application/octet-stream`) and streams it into Elasticsearch in batches of 10,000 using `JsonSerializer.DeserializeAsyncEnumerable`.
 

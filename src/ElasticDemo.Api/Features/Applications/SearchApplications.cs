@@ -136,10 +136,16 @@ public class ApplicationQueryBuilder
 
         var roleQueries = roles.Select(role => (Action<QueryDescriptor<Application>>)(role switch
             {
+                ClientRole.MainClient => s => s.Bool(bb => bb.Must(BuildClientTerms("mainApplicant.client"))),
                 ClientRole.CoApplicant => s => s.Nested(n => n.Path(_ => _.CoApplicants)
-                    .Query(nq => nq.Bool(bb => bb.Must(BuildClientTerms("coApplicants"))))),
-                ClientRole.MainClient => s => s.Bool(bb => bb.Must( BuildClientTerms("mainClient"))),
-                ClientRole.Spouse => s => s.Bool(bb => bb.Must(BuildClientTerms("spouse"))),
+                    .Query(nq => nq.Bool(bb => bb.Must(BuildClientTerms("coApplicants.client"))))),
+                ClientRole.Spouse => s => s.Bool(bb => bb.Should(
+                    // Search main applicant's spouse
+                    sh => sh.Bool(b2 => b2.Must(BuildClientTerms("mainApplicant.spouse"))),
+                    // Search co-applicants' spouses
+                    sh => sh.Nested(n => n.Path(_ => _.CoApplicants)
+                        .Query(nq => nq.Bool(b2 => b2.Must(BuildClientTerms("coApplicants.spouse")))))
+                ).MinimumShouldMatch(1)),
                 _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
             }))
             .ToList();

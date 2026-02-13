@@ -187,8 +187,8 @@ for (var i = 0; i < totalCount; i++)
     // --- User ---
     var user = channel == "Online" ? client.ClientId : employees[faker.Random.Number(0, employees.Length - 1)];
 
-    // --- Spouse (25%) ---
-    var hasSpouse = faker.Random.Bool(0.25f);
+    // --- Main applicant spouse (25%) ---
+    var mainHasSpouse = faker.Random.Bool(0.25f);
 
     // --- CoApplicants (20%, always exactly 1) ---
     var hasCoApplicant = faker.Random.Bool(0.20f);
@@ -211,23 +211,15 @@ for (var i = 0; i < totalCount; i++)
     writer.WriteString("createdAt", createdAt);
     writer.WriteString("updatedAt", updatedAt);
 
-    // mainClient
-    writer.WritePropertyName("mainClient");
-    WriteClient(writer, client);
-
-    // spouse
-    if (hasSpouse)
+    // mainApplicant
+    writer.WritePropertyName("mainApplicant");
+    var mainSpouseIdx = -1;
+    if (mainHasSpouse)
     {
-        var spouseIdx = faker.Random.Number(0, uniqueClientCount - 1);
-        // Avoid same person as main client
-        if (spouseIdx == clientIdx) spouseIdx = (spouseIdx + 1) % uniqueClientCount;
-        writer.WritePropertyName("spouse");
-        WriteClient(writer, clients[spouseIdx]);
+        mainSpouseIdx = faker.Random.Number(0, uniqueClientCount - 1);
+        if (mainSpouseIdx == clientIdx) mainSpouseIdx = (mainSpouseIdx + 1) % uniqueClientCount;
     }
-    else
-    {
-        writer.WriteNull("spouse");
-    }
+    WriteApplicant(writer, client, mainHasSpouse ? clients[mainSpouseIdx] : null);
 
     // coApplicants
     writer.WritePropertyName("coApplicants");
@@ -236,7 +228,18 @@ for (var i = 0; i < totalCount; i++)
     {
         var coIdx = faker.Random.Number(0, uniqueClientCount - 1);
         if (coIdx == clientIdx) coIdx = (coIdx + 1) % uniqueClientCount;
-        WriteClient(writer, clients[coIdx]);
+        var coClient = clients[coIdx];
+
+        // Co-applicant spouse (15%)
+        var coHasSpouse = faker.Random.Bool(0.15f);
+        (string, string, string, string, string)? coSpouse = null;
+        if (coHasSpouse)
+        {
+            var coSpouseIdx = faker.Random.Number(0, uniqueClientCount - 1);
+            if (coSpouseIdx == coIdx) coSpouseIdx = (coSpouseIdx + 1) % uniqueClientCount;
+            coSpouse = clients[coSpouseIdx];
+        }
+        WriteApplicant(writer, coClient, coSpouse);
     }
     writer.WriteEndArray();
 
@@ -286,6 +289,29 @@ static string GeneratePesel(Faker faker)
     digits[10] = (10 - (sum % 10)) % 10;
 
     return string.Concat(digits);
+}
+
+static void WriteApplicant(
+    Utf8JsonWriter writer,
+    (string FirstName, string LastName, string NationalId, string ClientId, string Email) client,
+    (string FirstName, string LastName, string NationalId, string ClientId, string Email)? spouse)
+{
+    writer.WriteStartObject();
+
+    writer.WritePropertyName("client");
+    WriteClient(writer, client);
+
+    if (spouse is { } s)
+    {
+        writer.WritePropertyName("spouse");
+        WriteClient(writer, s);
+    }
+    else
+    {
+        writer.WriteNull("spouse");
+    }
+
+    writer.WriteEndObject();
 }
 
 static void WriteClient(Utf8JsonWriter writer, (string FirstName, string LastName, string NationalId, string ClientId, string Email) client)

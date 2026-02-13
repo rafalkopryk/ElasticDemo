@@ -40,14 +40,11 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
                     .Keyword(k => k.User, k => k.Normalizer("lowercase"))
                     .Date(d => d.CreatedAt)
                     .Date(d => d.UpdatedAt)
-                    .Object(o => o.MainClient, o => o
-                        .Properties(ClientProperties)
-                    )
-                    .Object(o => o.Spouse, o => o
-                        .Properties(ClientProperties)
+                    .Object(o => o.MainApplicant, o => o
+                        .Properties(ApplicantProperties)
                     )
                     .Nested(n => n.CoApplicants, n => n
-                        .Properties(ClientProperties)
+                        .Properties(ApplicantProperties)
                     )
                 )
             )
@@ -69,4 +66,8 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
         .Keyword("lastName", k => k.Normalizer("lowercase"))
         .Keyword("nationalId")
         .Keyword("clientId");
+
+    private static void ApplicantProperties<T>(PropertiesDescriptor<T> ap) => ap
+        .Object("client", o => o.Properties(ClientProperties))
+        .Object("spouse", o => o.Properties(ClientProperties));
 }
