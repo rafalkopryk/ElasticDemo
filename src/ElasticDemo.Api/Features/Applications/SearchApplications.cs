@@ -121,10 +121,18 @@ public class ApplicationQueryBuilder
     {
         AddClientQuery();
 
-        if (_queries.Count == 0)
-            return q.MatchAll(new MatchAllQuery());
+        return _queries.Count switch
+        {
+            0 => q.MatchAll(new MatchAllQuery()),
+            1 => ApplySingle(q, _queries[0]),
+            _ => q.Bool(b => b.Must(_queries.ToArray()))
+        };
+    }
 
-        return q.Bool(b => b.Must(_queries.ToArray()));
+    private static Query ApplySingle(QueryDescriptor<Application> q, Action<QueryDescriptor<Application>> action)
+    {
+        action(q);
+        return q;
     }
 
     private void AddClientQuery()
