@@ -70,7 +70,25 @@ public static class Extensions
                     )
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.EnrichWithHttpRequestMessage = static (activity, request) =>
+                        {
+                            if (request.Content is not null)
+                            {
+                                var body = request.Content.ReadAsStringAsync().Result;
+                                activity.SetTag("http.request.body", body);
+                            }
+                        };
+                        options.EnrichWithHttpResponseMessage = static (activity, response) =>
+                        {
+                            if (response.Content is not null)
+                            {
+                                var body = response.Content.ReadAsStringAsync().Result;
+                                activity.SetTag("http.response.body", body);
+                            }
+                        };
+                    });
             });
 
         builder.AddOpenTelemetryExporters();
