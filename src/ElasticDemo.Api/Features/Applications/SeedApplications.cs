@@ -30,7 +30,7 @@ public class SeedApplicationsHandler(
         try
         {
             var bulkResponse = await client.BulkAsync(b => b
-                .Index(ApplicationIndex.Active)
+                .Index(ApplicationIndex.Alias)
                 .IndexMany(batch)
             );
 

@@ -27,5 +27,7 @@ public record Application
 
 public static class ApplicationIndex
 {
-    public const string Active = "applications";
+    public const string Alias = "applications";
+    public const string CurrentVersion = "applications_v1";
+    public const string VersionPattern = "applications_v*";
 }

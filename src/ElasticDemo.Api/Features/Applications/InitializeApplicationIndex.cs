@@ -10,14 +10,17 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
 {
     public async Task<IResult> Handle()
     {
-        var existsResponse = await client.Indices.ExistsAsync(ApplicationIndex.Active);
-        if (existsResponse.Exists)
+        var aliasResponse = await client.Indices.ExistsAliasAsync(ApplicationIndex.Alias);
+        if (aliasResponse.Exists)
         {
             return Results.Ok(new InitializeApplicationIndexResponse(true,
-                $"Index '{ApplicationIndex.Active}' already exists"));
+                $"Index '{ApplicationIndex.CurrentVersion}' with alias '{ApplicationIndex.Alias}' already exists"));
         }
 
-        var createResponse = await client.Indices.CreateAsync(ApplicationIndex.Active, c => c
+        var createResponse = await client.Indices.CreateAsync(ApplicationIndex.CurrentVersion, c => c
+            .Aliases(a => a
+                .Add(ApplicationIndex.Alias, alias => { })
+            )
             .Settings(s => s
                 .Analysis(a => a
                     .Normalizers(n => n
@@ -57,7 +60,7 @@ public class InitializeApplicationIndexHandler(ElasticsearchClient client)
         }
 
         return Results.Ok(new InitializeApplicationIndexResponse(true,
-            $"Created index '{ApplicationIndex.Active}'"));
+            $"Created index '{ApplicationIndex.CurrentVersion}' with alias '{ApplicationIndex.Alias}'"));
     }
 
     private static void ClientProperties<T>(PropertiesDescriptor<T> cp) => cp

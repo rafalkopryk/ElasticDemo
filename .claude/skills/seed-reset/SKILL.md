@@ -24,7 +24,7 @@ Verify: `curl -s "http://localhost:9200/products/_count"` — report product cou
 
 Run these curl commands sequentially, reporting success/failure:
 
-1. `curl -s -X DELETE "http://localhost:9200/applications"` (ignore 404)
+1. `curl -s -X DELETE "http://localhost:9200/applications_v*"` (ignore 404)
 2. `curl -ks -X POST "https://localhost:7232/api/applications/init"`
 3. `curl -ks -T src/ElasticDemo.Api/applications.json -X POST "https://localhost:7232/api/applications/seed" -H "Content-Type: application/octet-stream"`
 

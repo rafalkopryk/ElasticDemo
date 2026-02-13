@@ -39,7 +39,7 @@ public class SearchApplicationsHandler(ElasticsearchClient client)
         var sortOrder = request.Sort == "asc" ? SortOrder.Asc : SortOrder.Desc;
 
         var searchResponse = await client.SearchAsync<Application>(s => s
-            .Indices(ApplicationIndex.Active)
+            .Indices(ApplicationIndex.Alias)
             .Size(request.Size)
             .Query(q => new ApplicationQueryBuilder()
                 .Term(request.Product, f => f.Product)
