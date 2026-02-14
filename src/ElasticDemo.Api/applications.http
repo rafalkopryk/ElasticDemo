@@ -71,8 +71,8 @@ Content-Type: application/json
 
 {
   "firstName": "Anna",
-  "roles": ["Spouse"],
-  "size": 10
+  "roles": ["MainClient"],
+  "size": 1
 }
 
 ### Search - across main applicant and spouse

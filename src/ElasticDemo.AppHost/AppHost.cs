@@ -30,4 +30,12 @@ else
     api.WithReference(model).WaitFor(model);
 }
 
+var toolsPath = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", "..", "tools"));
+
+builder.AddK6("k6")
+    .WithBindMount(toolsPath, "/scripts", isReadOnly: true)
+    .WithEnvironment("K6_BASE_URL", api.GetEndpoint("http"))
+    .WithArgs("run", "/scripts/k6-applications-search.js")
+    .WaitFor(api);
+
 builder.Build().Run();

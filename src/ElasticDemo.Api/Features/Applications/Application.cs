@@ -34,5 +34,4 @@ public static class ApplicationIndex
 {
     public const string Alias = "applications";
     public const string CurrentVersion = "applications_v2";
-    public const string VersionPattern = "applications_v*";
 }

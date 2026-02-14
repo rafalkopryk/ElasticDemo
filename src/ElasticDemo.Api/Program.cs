@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = null);
 
 builder.AddServiceDefaults();
-builder.AddElasticsearchClient("elasticsearch");
+builder.AddElasticsearchClient("elasticsearch",
+configureClientSettings: (seetings => seetings.EnableHttpCompression(false)));
 if (builder.Configuration.GetValue<bool>("Embeddings:UseMock"))
 {
     builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, MockEmbeddingGenerator>();
