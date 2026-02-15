@@ -92,7 +92,7 @@ export const options = {
 const headers = { 'Content-Type': 'application/json' };
 
 function searchUrl() {
-  return `${BASE_URL}/api/applications/search`;
+  return `${BASE_URL}/api/applications/v2/search`;
 }
 
 function post(payload) {
@@ -110,7 +110,7 @@ function run(trendKey, payload) {
   sleep(0.1);
 }
 
-// --- setup: discover real data from the index ---
+// --- setup: discover real data from the V2 index ---
 
 export function setup() {
   const res = http.post(searchUrl(), JSON.stringify({ size: DISCOVERY_SIZE, sort: 'desc' }), { headers });
@@ -121,7 +121,7 @@ export function setup() {
   const body = res.json();
   const apps = body.applications || [];
   if (apps.length === 0) {
-    throw new Error('No applications found — seed the index first');
+    throw new Error('No applications found — seed/migrate the V2 index first');
   }
 
   const products = [...new Set(apps.map(a => a.product))];
@@ -129,30 +129,27 @@ export function setup() {
   const statuses = [...new Set(apps.map(a => a.status))];
   const transactions = [...new Set(apps.map(a => a.transaction))];
 
-  // Main client data
-  const mainClients = apps.map(a => a.mainApplicant.client);
+  // Extract clients by role from flat clients collection
+  const mainClients = [];
+  const spouseClients = [];
+  const coClients = [];
+
+  for (const app of apps) {
+    for (const c of app.clients || []) {
+      switch (c.role) {
+        case 'MainClient': mainClients.push(c); break;
+        case 'Spouse': spouseClients.push(c); break;
+        case 'CoApplicant': coClients.push(c); break;
+      }
+    }
+  }
+
   const mainNames = mainClients.map(c => ({ firstName: c.firstName, lastName: c.lastName }));
   const mainClientIds = [...new Set(mainClients.map(c => c.clientId))];
 
-  // Spouse data
-  const spouseClients = [];
-  for (const app of apps) {
-    const sp = app.mainApplicant.spouse;
-    if (sp) spouseClients.push(sp);
-    for (const co of app.coApplicants || []) {
-      if (co.spouse) spouseClients.push(co.spouse);
-    }
-  }
   const spouseNames = spouseClients.map(c => ({ firstName: c.firstName, lastName: c.lastName }));
   const spouseClientIds = [...new Set(spouseClients.map(c => c.clientId))];
 
-  // Co-applicant data
-  const coClients = [];
-  for (const app of apps) {
-    for (const co of app.coApplicants || []) {
-      coClients.push(co.client);
-    }
-  }
   const coApplicantNames = coClients.map(c => ({ firstName: c.firstName, lastName: c.lastName }));
   const coApplicantClientIds = [...new Set(coClients.map(c => c.clientId))];
 

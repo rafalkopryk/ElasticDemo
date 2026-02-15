@@ -1,0 +1,112 @@
+@baseUrl = https://localhost:7232
+
+### Initialize Applications V2 index
+POST {{baseUrl}}/api/applications/v2/init
+
+### Migrate V1 data to V2 (flatten mainApplicant/coApplicants into clients collection)
+POST {{baseUrl}}/api/applications/v2/migrate
+
+### Seed applications V2 (direct seeding with flat clients format)
+# Bulk indexes applications from uploaded JSON file (streams without buffering)
+POST {{baseUrl}}/api/applications/v2/seed
+Content-Type: application/octet-stream
+
+< ./applicationsV2.json
+
+### Search - all applications (default: 100 results, newest first)
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{}
+
+### Search - by product
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "product": "CashLoan",
+  "size": 10
+}
+
+### Search - by channel and status
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "channel": "Online",
+  "status": "Completed",
+  "size": 10
+}
+
+### Search - by date range
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "createdAtFrom": "2025-01-01T00:00:00Z",
+  "createdAtTo": "2025-12-31T23:59:59Z",
+  "size": 10
+}
+
+### Search - by main client name (default when roles omitted)
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "firstName": "Anna",
+  "lastName": "nowak",
+  "size": 10
+}
+
+### Search - by main client nationalId
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "nationalId": "52183539787",
+  "size": 10
+}
+
+### Search - by MainClient role only
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "firstName": "Anna",
+  "roles": ["MainClient"],
+  "size": 1
+}
+
+### Search - across main client and spouse
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "firstName": "Anna",
+  "lastName": "Nowak",
+  "roles": ["MainClient", "Spouse"],
+  "size": 10
+}
+
+### Search - across all roles
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "firstName": "Piotr",
+  "roles": ["MainClient", "Spouse", "CoApplicant"],
+  "size": 10
+}
+
+### Search - combined filters
+POST {{baseUrl}}/api/applications/v2/search
+Content-Type: application/json
+
+{
+  "product": "CashLoan",
+  "channel": "Online",
+  "status": "Completed",
+  "firstName": "Piotr",
+  "sort": "asc",
+  "size": 20
+}

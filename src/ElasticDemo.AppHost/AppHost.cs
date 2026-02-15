@@ -38,4 +38,10 @@ builder.AddK6("k6")
     .WithArgs("run", "/scripts/k6-applications-search.js")
     .WaitFor(api);
 
+builder.AddK6("k6-v2")
+    .WithBindMount(toolsPath, "/scripts", isReadOnly: true)
+    .WithEnvironment("K6_BASE_URL", api.GetEndpoint("http"))
+    .WithArgs("run", "/scripts/k6-applications-v2-search.js")
+    .WaitFor(api);
+
 builder.Build().Run();

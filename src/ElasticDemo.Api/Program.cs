@@ -1,4 +1,5 @@
 using ElasticDemo.Api.Features.Applications;
+using ElasticDemo.Api.Features.ApplicationsV2;
 using ElasticDemo.Api.Features.Products;
 using Microsoft.Extensions.AI;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -38,6 +39,10 @@ builder.Services.AddScoped<ArchiveProductsHandler>();
 builder.Services.AddScoped<InitializeApplicationIndexHandler>();
 builder.Services.AddScoped<SeedApplicationsHandler>();
 builder.Services.AddScoped<SearchApplicationsHandler>();
+builder.Services.AddScoped<InitializeApplicationV2IndexHandler>();
+builder.Services.AddScoped<SeedApplicationsV2Handler>();
+builder.Services.AddScoped<SearchApplicationsV2Handler>();
+builder.Services.AddScoped<MigrateApplicationsV2Handler>();
 
 var app = builder.Build();
 
@@ -112,5 +117,23 @@ app.MapPost("/api/applications/search", async (
     SearchApplicationsRequest request) =>
     await handler.Handle(request))
     .WithName("SearchApplications");
+
+app.MapPost("/api/applications/v2/init", async (InitializeApplicationV2IndexHandler handler) =>
+    await handler.Handle())
+    .WithName("InitializeApplicationV2Index");
+
+app.MapPost("/api/applications/v2/seed", async (SeedApplicationsV2Handler handler, HttpRequest request) =>
+    await handler.Handle(request.Body))
+    .WithName("SeedApplicationsV2");
+
+app.MapPost("/api/applications/v2/search", async (
+    SearchApplicationsV2Handler handler,
+    SearchApplicationsV2Request request) =>
+    await handler.Handle(request))
+    .WithName("SearchApplicationsV2");
+
+app.MapPost("/api/applications/v2/migrate", async (MigrateApplicationsV2Handler handler) =>
+    await handler.Handle())
+    .WithName("MigrateApplicationsV2");
 
 app.Run();
